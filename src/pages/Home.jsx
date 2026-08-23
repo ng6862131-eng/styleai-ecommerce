@@ -1,10 +1,11 @@
 import Navbar from "../components/Navbar";
+import AiChatbot from "../components/AiChatbot";
 
 function Home() {
   return (
     <>
       <Navbar />
-
+                
       <main>
         <section className="hero">
           <div className="hero-content">
@@ -107,6 +108,7 @@ function Home() {
             </button>
           </div>
         </section>
+        <AiChatbot />
       </main>
     </>
   );
