@@ -1384,3 +1384,34 @@ body {
     padding: 12px;
   }
 }
+/* ================= AI PRODUCT ACTIONS ================= */
+
+.ai-product-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ai-cart-btn {
+  border: none;
+  background: #171717;
+  color: white;
+  padding: 7px 11px;
+  border-radius: 15px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.ai-cart-btn:hover {
+  background: #9b5cff;
+}
+
+.ai-view-btn {
+  transition: 0.3s;
+}
+
+.ai-view-btn:hover {
+  color: #171717;
+}
