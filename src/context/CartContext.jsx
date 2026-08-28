@@ -1,13 +1,23 @@
 import { createContext, useContext, useState } from "react";
 
+
 const CartContext = createContext();
+
+// ================= CART PROVIDER =================
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => {
     const savedCart = localStorage.getItem("styleai-cart");
 
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error("Error loading cart:", error);
+      return [];
+    }
   });
+
+  // ================= SAVE CART =================
 
   const saveCart = (updatedCart) => {
     setCartItems(updatedCart);
@@ -18,7 +28,14 @@ export function CartProvider({ children }) {
     );
   };
 
-  const addToCart = (product, selectedColor, selectedSize, quantity) => {
+  // ================= ADD TO CART =================
+
+  const addToCart = (
+    product,
+    selectedColor = "Default",
+    selectedSize = "Standard",
+    quantity = 1
+  ) => {
     const existingItem = cartItems.find(
       (item) =>
         item.id === product.id &&
@@ -54,7 +71,13 @@ export function CartProvider({ children }) {
     saveCart(updatedCart);
   };
 
-  const removeFromCart = (id, selectedColor, selectedSize) => {
+  // ================= REMOVE FROM CART =================
+
+  const removeFromCart = (
+    id,
+    selectedColor,
+    selectedSize
+  ) => {
     const updatedCart = cartItems.filter(
       (item) =>
         !(
@@ -67,7 +90,13 @@ export function CartProvider({ children }) {
     saveCart(updatedCart);
   };
 
-  const increaseQuantity = (id, selectedColor, selectedSize) => {
+  // ================= INCREASE QUANTITY =================
+
+  const increaseQuantity = (
+    id,
+    selectedColor,
+    selectedSize
+  ) => {
     const updatedCart = cartItems.map((item) =>
       item.id === id &&
       item.selectedColor === selectedColor &&
@@ -82,7 +111,13 @@ export function CartProvider({ children }) {
     saveCart(updatedCart);
   };
 
-  const decreaseQuantity = (id, selectedColor, selectedSize) => {
+  // ================= DECREASE QUANTITY =================
+
+  const decreaseQuantity = (
+    id,
+    selectedColor,
+    selectedSize
+  ) => {
     const updatedCart = cartItems.map((item) =>
       item.id === id &&
       item.selectedColor === selectedColor &&
@@ -98,16 +133,25 @@ export function CartProvider({ children }) {
     saveCart(updatedCart);
   };
 
+  // ================= CART COUNT =================
+
   const cartCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
+    (total, item) =>
+      total + Number(item.quantity || 0),
     0
   );
 
+  // ================= CART TOTAL =================
+
   const cartTotal = cartItems.reduce(
     (total, item) =>
-      total + item.price * item.quantity,
+      total +
+      Number(item.price || 0) *
+        Number(item.quantity || 0),
     0
   );
+
+  // ================= PROVIDER =================
 
   return (
     <CartContext.Provider
@@ -125,6 +169,8 @@ export function CartProvider({ children }) {
     </CartContext.Provider>
   );
 }
+
+// ================= USE CART =================
 
 export function useCart() {
   return useContext(CartContext);

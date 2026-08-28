@@ -2,17 +2,55 @@ import {
   FaStar,
   FaHeart,
   FaShoppingBag,
+  FaArrowRight,
 } from "react-icons/fa";
 
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useCart } from "../context/CartContext";
 
 function ProductCard({ product }) {
+  const { addToCart } = useCart();
+
+  const [liked, setLiked] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const handleAddToCart = () => {
+    const selectedColor =
+      product.colors?.[0] || "Default";
+
+    const selectedSize =
+      product.sizes?.[0] || "Standard";
+
+    addToCart(
+      product,
+      selectedColor,
+      selectedSize,
+      1
+    );
+
+    setAdded(true);
+
+    setTimeout(() => {
+      setAdded(false);
+    }, 1500);
+  };
+
+  const handleWishlist = () => {
+    setLiked(!liked);
+  };
+
   return (
     <div className="product-card">
 
+      {/* ================= IMAGE ================= */}
+
       <div className="product-image-container">
 
-        <Link to={`/product/${product.id}`}>
+        <Link
+          to={`/product/${product.id}`}
+          className="product-image-link"
+        >
           <img
             src={product.image}
             alt={product.name}
@@ -20,11 +58,27 @@ function ProductCard({ product }) {
           />
         </Link>
 
-        <button className="wishlist-btn">
+        {/* CATEGORY */}
+
+        <span className="product-badge">
+          {product.category}
+        </span>
+
+        {/* WISHLIST */}
+
+        <button
+          className={`wishlist-btn ${
+            liked ? "liked" : ""
+          }`}
+          onClick={handleWishlist}
+          aria-label="Add to wishlist"
+        >
           <FaHeart />
         </button>
 
       </div>
+
+      {/* ================= PRODUCT INFO ================= */}
 
       <div className="product-info">
 
@@ -39,30 +93,69 @@ function ProductCard({ product }) {
           <h3>{product.name}</h3>
         </Link>
 
+        {/* RATING */}
+
         <div className="product-rating">
 
-          <FaStar />
+          <span className="stars">
+            <FaStar />
+          </span>
 
-          <span>
+          <span className="rating-number">
             {product.rating}
+          </span>
+
+          <span className="rating-text">
+            / 5
           </span>
 
         </div>
 
+        {/* PRICE + CART */}
+
         <div className="product-bottom">
 
-          <strong>
-            ₹{product.price}
-          </strong>
+          <div className="product-price">
 
-          <Link
-            to={`/product/${product.id}`}
-            className="add-cart-btn"
+            <strong>
+              ₹{product.price}
+            </strong>
+
+            <span>
+              Free Delivery
+            </span>
+
+          </div>
+
+          <button
+            className={`add-cart-btn ${
+              added ? "added" : ""
+            }`}
+            onClick={handleAddToCart}
+            title={
+              added
+                ? "Added to cart"
+                : "Add to cart"
+            }
           >
-            <FaShoppingBag />
-          </Link>
+            {added ? (
+              <span>✓</span>
+            ) : (
+              <FaShoppingBag />
+            )}
+          </button>
 
         </div>
+
+        {/* VIEW DETAILS */}
+
+        <Link
+          to={`/product/${product.id}`}
+          className="view-product-btn"
+        >
+          View Details
+          <FaArrowRight />
+        </Link>
 
       </div>
 

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import products from "../data/products";
+import { useCart } from "../context/CartContext.jsx";
 
 function AiChatbot() {
+  const { addToCart } = useCart();
   const [message, setMessage] = useState("");
   const [recommendations, setRecommendations] = useState([]);
   const [chatMessage, setChatMessage] = useState(
@@ -410,35 +412,7 @@ function AiChatbot() {
     setMessage("");
   };
 
-  const addToCart = (product) => {
-    const existingCart =
-      JSON.parse(
-        localStorage.getItem("cart")
-      ) || [];
 
-    const existingProduct =
-      existingCart.find(
-        (item) => item.id === product.id
-      );
-
-    if (existingProduct) {
-      existingProduct.quantity += 1;
-    } else {
-      existingCart.push({
-        ...product,
-        quantity: 1,
-      });
-    }
-
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(existingCart)
-    );
-
-    alert(
-      `${product.name} added to cart! 🛒`
-    );
-  };
 
   return (
     <section className="ai-chatbot-section">
