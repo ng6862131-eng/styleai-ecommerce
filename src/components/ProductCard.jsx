@@ -7,13 +7,21 @@ import {
 
 import { Link } from "react-router-dom";
 import { useState } from "react";
+
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 function ProductCard({ product }) {
   const { addToCart } = useCart();
 
-  const [liked, setLiked] = useState(false);
+  const {
+    toggleWishlist,
+    isInWishlist,
+  } = useWishlist();
+
   const [added, setAdded] = useState(false);
+
+  /* ================= ADD TO CART ================= */
 
   const handleAddToCart = () => {
     const selectedColor =
@@ -36,9 +44,13 @@ function ProductCard({ product }) {
     }, 1500);
   };
 
+  /* ================= WISHLIST ================= */
+
   const handleWishlist = () => {
-    setLiked(!liked);
+    toggleWishlist(product);
   };
+
+  const liked = isInWishlist(product.id);
 
   return (
     <div className="product-card">
@@ -71,7 +83,16 @@ function ProductCard({ product }) {
             liked ? "liked" : ""
           }`}
           onClick={handleWishlist}
-          aria-label="Add to wishlist"
+          aria-label={
+            liked
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+          }
+          title={
+            liked
+              ? "Remove from wishlist"
+              : "Add to wishlist"
+          }
         >
           <FaHeart />
         </button>
@@ -90,7 +111,9 @@ function ProductCard({ product }) {
           to={`/product/${product.id}`}
           className="product-name-link"
         >
-          <h3>{product.name}</h3>
+          <h3>
+            {product.name}
+          </h3>
         </Link>
 
         {/* RATING */}

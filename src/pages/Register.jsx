@@ -8,6 +8,8 @@ import {
   FaLock,
   FaEye,
   FaEyeSlash,
+  FaCheck,
+  FaTimes,
 } from "react-icons/fa";
 
 function Register() {
@@ -27,6 +29,34 @@ function Register() {
 
   const [error, setError] = useState("");
 
+  /* ================= PASSWORD RULES ================= */
+
+  const passwordRules = {
+    length: password.length >= 8,
+    uppercase: /[A-Z]/.test(password),
+    lowercase: /[a-z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[^A-Za-z0-9]/.test(password),
+  };
+
+  const passedRules = Object.values(passwordRules).filter(
+    Boolean
+  ).length;
+
+  let passwordStrength = "";
+
+  if (password.length === 0) {
+    passwordStrength = "";
+  } else if (passedRules <= 2) {
+    passwordStrength = "Weak";
+  } else if (passedRules <= 4) {
+    passwordStrength = "Medium";
+  } else {
+    passwordStrength = "Strong";
+  }
+
+  /* ================= REGISTER ================= */
+
   const handleRegister = (event) => {
     event.preventDefault();
 
@@ -42,9 +72,9 @@ function Register() {
       return;
     }
 
-    if (password.length < 6) {
+    if (passedRules < 5) {
       setError(
-        "Password must contain at least 6 characters."
+        "Please create a strong password that meets all requirements."
       );
       return;
     }
@@ -54,14 +84,17 @@ function Register() {
       return;
     }
 
-    const existingUser = localStorage.getItem(
+    const savedUser = localStorage.getItem(
       "styleai-user"
     );
 
-    if (existingUser) {
-      const user = JSON.parse(existingUser);
+    if (savedUser) {
+      const existingUser = JSON.parse(savedUser);
 
-      if (user.email === email) {
+      if (
+        existingUser.email.toLowerCase() ===
+        email.toLowerCase()
+      ) {
         setError(
           "An account with this email already exists."
         );
@@ -75,20 +108,46 @@ function Register() {
       password,
     };
 
-  localStorage.setItem(
-  "styleai-user",
-  JSON.stringify(newUser)
-);
+    localStorage.setItem(
+      "styleai-user",
+      JSON.stringify(newUser)
+    );
 
-localStorage.removeItem("styleai-logged-in");
+    /*
+      User is NOT automatically logged in.
+      They must confirm the new account by
+      logging in manually.
+    */
 
-navigate("/login");
+    localStorage.removeItem(
+      "styleai-logged-in"
+    );
+
+    navigate("/login");
   };
+
+  /* ================= RULE COMPONENT ================= */
+
+  const PasswordRule = ({ valid, children }) => (
+    <div
+      className={
+        valid
+          ? "password-rule valid"
+          : "password-rule"
+      }
+    >
+      <span className="password-rule-icon">
+        {valid ? <FaCheck /> : <FaTimes />}
+      </span>
+
+      <span>{children}</span>
+    </div>
+  );
 
   return (
     <div className="login-page">
 
-      {/* BACK */}
+      {/* ================= BACK ================= */}
 
       <Link
         to="/login"
@@ -98,7 +157,7 @@ navigate("/login");
         Back to Login
       </Link>
 
-      {/* LEFT SIDE */}
+      {/* ================= LEFT SIDE ================= */}
 
       <div className="login-visual">
 
@@ -135,7 +194,7 @@ navigate("/login");
 
       </div>
 
-      {/* RIGHT SIDE */}
+      {/* ================= RIGHT SIDE ================= */}
 
       <div className="login-form-section">
 
@@ -159,7 +218,7 @@ navigate("/login");
 
           <form onSubmit={handleRegister}>
 
-            {/* NAME */}
+            {/* ================= NAME ================= */}
 
             <div className="login-field">
 
@@ -184,7 +243,7 @@ navigate("/login");
 
             </div>
 
-            {/* EMAIL */}
+            {/* ================= EMAIL ================= */}
 
             <div className="login-field">
 
@@ -209,7 +268,7 @@ navigate("/login");
 
             </div>
 
-            {/* PASSWORD */}
+            {/* ================= PASSWORD ================= */}
 
             <div className="login-field">
 
@@ -227,7 +286,7 @@ navigate("/login");
                       ? "text"
                       : "password"
                   }
-                  placeholder="Create a password"
+                  placeholder="Create a strong password"
                   value={password}
                   onChange={(event) =>
                     setPassword(event.target.value)
@@ -252,9 +311,92 @@ navigate("/login");
 
               </div>
 
+              {/* ================= STRENGTH ================= */}
+
+              {password.length > 0 && (
+                <div className="password-strength">
+
+                  <div className="strength-header">
+
+                    <span>
+                      Password strength
+                    </span>
+
+                    <strong
+                      className={`strength-${passwordStrength.toLowerCase()}`}
+                    >
+                      {passwordStrength}
+                    </strong>
+
+                  </div>
+
+                  <div className="strength-bars">
+
+                    {[1, 2, 3, 4, 5].map(
+                      (bar) => (
+                        <span
+                          key={bar}
+                          className={
+                            bar <= passedRules
+                              ? `strength-bar active strength-${passwordStrength.toLowerCase()}`
+                              : "strength-bar"
+                          }
+                        />
+                      )
+                    )}
+
+                  </div>
+
+                </div>
+              )}
+
+              {/* ================= REQUIREMENTS ================= */}
+
+              <div className="password-requirements">
+
+                <p>
+                  Password must contain:
+                </p>
+
+                <div className="password-rules">
+
+                  <PasswordRule
+                    valid={passwordRules.length}
+                  >
+                    At least 8 characters
+                  </PasswordRule>
+
+                  <PasswordRule
+                    valid={passwordRules.uppercase}
+                  >
+                    One uppercase letter
+                  </PasswordRule>
+
+                  <PasswordRule
+                    valid={passwordRules.lowercase}
+                  >
+                    One lowercase letter
+                  </PasswordRule>
+
+                  <PasswordRule
+                    valid={passwordRules.number}
+                  >
+                    One number
+                  </PasswordRule>
+
+                  <PasswordRule
+                    valid={passwordRules.special}
+                  >
+                    One special character
+                  </PasswordRule>
+
+                </div>
+
+              </div>
+
             </div>
 
-            {/* CONFIRM PASSWORD */}
+            {/* ================= CONFIRM PASSWORD ================= */}
 
             <div className="login-field">
 
@@ -299,9 +441,23 @@ navigate("/login");
 
               </div>
 
+              {confirmPassword.length > 0 && (
+                <div
+                  className={
+                    password === confirmPassword
+                      ? "password-match"
+                      : "password-not-match"
+                  }
+                >
+                  {password === confirmPassword
+                    ? "✓ Passwords match"
+                    : "✕ Passwords do not match"}
+                </div>
+              )}
+
             </div>
 
-            {/* ERROR */}
+            {/* ================= ERROR ================= */}
 
             {error && (
               <div className="login-error">
@@ -309,7 +465,7 @@ navigate("/login");
               </div>
             )}
 
-            {/* REGISTER */}
+            {/* ================= REGISTER ================= */}
 
             <button
               type="submit"
@@ -320,7 +476,7 @@ navigate("/login");
 
           </form>
 
-          {/* LOGIN */}
+          {/* ================= LOGIN ================= */}
 
           <div className="login-register">
 

@@ -1,92 +1,207 @@
+import { Link } from "react-router-dom";
 import {
-  createContext,
-  useContext,
-  useState,
-} from "react";
+  FaArrowLeft,
+  FaHeart,
+  FaTrash,
+  FaShoppingBag,
+} from "react-icons/fa";
 
-const WishlistContext = createContext();
+import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
-export function WishlistProvider({ children }) {
-  const [wishlistItems, setWishlistItems] =
-    useState(() => {
-      const savedWishlist =
-        localStorage.getItem("styleai-wishlist");
+function Wishlist() {
+  const {
+    wishlistItems,
+    removeFromWishlist,
+  } = useWishlist();
 
-      return savedWishlist
-        ? JSON.parse(savedWishlist)
-        : [];
-    });
+  const { addToCart } = useCart();
 
-  const saveWishlist = (updatedWishlist) => {
-    setWishlistItems(updatedWishlist);
+  const handleAddToCart = (product) => {
+    const selectedColor =
+      product.colors?.[0] || "Default";
 
-    localStorage.setItem(
-      "styleai-wishlist",
-      JSON.stringify(updatedWishlist)
-    );
-  };
+    const selectedSize =
+      product.sizes?.[0] || "Standard";
 
-  const addToWishlist = (product) => {
-    const alreadyExists = wishlistItems.some(
-      (item) => item.id === product.id
-    );
-
-    if (alreadyExists) {
-      return;
-    }
-
-    saveWishlist([
-      ...wishlistItems,
+    addToCart(
       product,
-    ]);
-  };
-
-  const removeFromWishlist = (productId) => {
-    const updatedWishlist =
-      wishlistItems.filter(
-        (item) => item.id !== productId
-      );
-
-    saveWishlist(updatedWishlist);
-  };
-
-  const toggleWishlist = (product) => {
-    const alreadyExists = wishlistItems.some(
-      (item) => item.id === product.id
+      selectedColor,
+      selectedSize,
+      1
     );
 
-    if (alreadyExists) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
+    alert("Product added to cart!");
   };
-
-  const isInWishlist = (productId) => {
-    return wishlistItems.some(
-      (item) => item.id === productId
-    );
-  };
-
-  const wishlistCount =
-    wishlistItems.length;
 
   return (
-    <WishlistContext.Provider
-      value={{
-        wishlistItems,
-        addToWishlist,
-        removeFromWishlist,
-        toggleWishlist,
-        isInWishlist,
-        wishlistCount,
-      }}
-    >
-      {children}
-    </WishlistContext.Provider>
+    <div className="wishlist-page">
+
+      {/* ================= HEADER ================= */}
+
+      <div className="wishlist-header">
+
+        <Link
+          to="/"
+          className="wishlist-back"
+        >
+          <FaArrowLeft />
+          Back to Home
+        </Link>
+
+        <Link
+          to="/"
+          className="wishlist-logo"
+        >
+          STYLE<span>AI</span>
+        </Link>
+
+      </div>
+
+      {/* ================= CONTENT ================= */}
+
+      <main className="wishlist-container">
+
+        <div className="wishlist-title">
+
+          <p>
+            YOUR SAVED STYLE
+          </p>
+
+          <h1>
+            My Wishlist
+          </h1>
+
+          <span>
+            {wishlistItems.length === 0
+              ? "Your favourite products will appear here."
+              : `${wishlistItems.length} ${
+                  wishlistItems.length === 1
+                    ? "item"
+                    : "items"
+                } saved`}
+          </span>
+
+        </div>
+
+        {/* ================= EMPTY ================= */}
+
+        {wishlistItems.length === 0 ? (
+
+          <div className="wishlist-empty">
+
+            <div className="wishlist-empty-icon">
+              <FaHeart />
+            </div>
+
+            <h2>
+              Your wishlist is empty
+            </h2>
+
+            <p>
+              Save the styles you love and
+              find them here anytime.
+            </p>
+
+            <Link
+              to="/shop"
+              className="wishlist-shop-btn"
+            >
+              Explore Collection
+            </Link>
+
+          </div>
+
+        ) : (
+
+          /* ================= PRODUCTS ================= */
+
+          <div className="wishlist-grid">
+
+            {wishlistItems.map((product) => (
+
+              <div
+                className="wishlist-card"
+                key={product.id}
+              >
+
+                {/* IMAGE */}
+
+                <div className="wishlist-image">
+
+                  <Link
+                    to={`/product/${product.id}`}
+                  >
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                    />
+                  </Link>
+
+                  <button
+                    className="wishlist-remove"
+                    onClick={() =>
+                      removeFromWishlist(
+                        product.id
+                      )
+                    }
+                    title="Remove from wishlist"
+                  >
+                    <FaTrash />
+                  </button>
+
+                </div>
+
+                {/* INFO */}
+
+                <div className="wishlist-info">
+
+                  <p>
+                    {product.category}
+                  </p>
+
+                  <Link
+                    to={`/product/${product.id}`}
+                  >
+                    <h3>
+                      {product.name}
+                    </h3>
+                  </Link>
+
+                  <div className="wishlist-bottom">
+
+                    <strong>
+                      ₹{product.price}
+                    </strong>
+
+                    <button
+                      onClick={() =>
+                        handleAddToCart(
+                          product
+                        )
+                      }
+                      className="wishlist-cart-btn"
+                      title="Add to cart"
+                    >
+                      <FaShoppingBag />
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
+      </main>
+
+    </div>
   );
 }
 
-export function useWishlist() {
-  return useContext(WishlistContext);
-}
+export default Wishlist;

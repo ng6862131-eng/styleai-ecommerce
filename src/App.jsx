@@ -11,6 +11,9 @@ import Checkout from "./pages/Checkout";
 import ProductDetails from "./pages/ProductDetails";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
+import Order from "./pages/Order";
+import Wishlist from "./pages/Wishlist";
 function App() {
   return (
     <BrowserRouter>
@@ -54,6 +57,22 @@ function App() {
          path="/register"
          element={<Register />}
         />
+
+        <Route
+          path="/profile"
+          element={<Profile />}
+        />
+
+        <Route
+          path="/orders"
+          element={<Order />}
+        />
+
+        <Route
+          path="/wishlist"
+          element={<Wishlist />}
+        />
+
       </Routes>
 
     </BrowserRouter>

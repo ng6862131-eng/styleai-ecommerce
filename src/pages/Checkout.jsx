@@ -1,9 +1,17 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import { useCart } from "../context/CartContext";
 
 function Checkout() {
   const { cartItems, cartTotal } = useCart();
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -14,12 +22,59 @@ function Checkout() {
 
   const [loading, setLoading] = useState(false);
 
+  /* =====================================================
+     LOGIN PROTECTION
+     ===================================================== */
+
+  useEffect(() => {
+    const loggedIn =
+      localStorage.getItem(
+        "styleai-logged-in"
+      ) === "true";
+
+    if (!loggedIn) {
+      navigate("/login", {
+        state: {
+          from: "/checkout",
+        },
+      });
+    }
+  }, [navigate]);
+
+  /* =====================================================
+     LOAD USER DETAILS
+     ===================================================== */
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem(
+      "styleai-user"
+    );
+
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+
+      setCustomer((previousCustomer) => ({
+        ...previousCustomer,
+        name: user.name || "",
+        email: user.email || "",
+      }));
+    }
+  }, []);
+
+  /* =====================================================
+     INPUT CHANGE
+     ===================================================== */
+
   const handleChange = (e) => {
     setCustomer({
       ...customer,
       [e.target.name]: e.target.value,
     });
   };
+
+  /* =====================================================
+     RAZORPAY SCRIPT
+     ===================================================== */
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -28,7 +83,8 @@ function Checkout() {
         return;
       }
 
-      const script = document.createElement("script");
+      const script =
+        document.createElement("script");
 
       script.src =
         "https://checkout.razorpay.com/v1/checkout.js";
@@ -41,6 +97,10 @@ function Checkout() {
     });
   };
 
+  /* =====================================================
+     PAYMENT
+     ===================================================== */
+
   const handlePayment = async () => {
     if (
       !customer.name ||
@@ -48,7 +108,9 @@ function Checkout() {
       !customer.phone ||
       !customer.address
     ) {
-      alert("Please fill all shipping details.");
+      alert(
+        "Please fill all shipping details."
+      );
       return;
     }
 
@@ -57,52 +119,86 @@ function Checkout() {
       return;
     }
 
+    const loggedIn =
+      localStorage.getItem(
+        "styleai-logged-in"
+      ) === "true";
+
+    if (!loggedIn) {
+      navigate("/login", {
+        state: {
+          from: "/checkout",
+        },
+      });
+
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Load Razorpay Checkout
-      const razorpayLoaded = await loadRazorpay();
+      /* LOAD RAZORPAY */
+
+      const razorpayLoaded =
+        await loadRazorpay();
 
       if (!razorpayLoaded) {
-        alert("Razorpay failed to load.");
+        alert(
+          "Razorpay failed to load."
+        );
+
         setLoading(false);
         return;
       }
 
-      // Create order on our backend
-      const orderResponse = await fetch(
-        "http://localhost:5000/create-order",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: cartTotal,
-          }),
-        }
-      );
+      /* CREATE ORDER */
 
-      const orderData = await orderResponse.json();
+      const orderResponse =
+        await fetch(
+          "http://localhost:5000/create-order",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              amount: cartTotal,
+            }),
+          }
+        );
+
+      const orderData =
+        await orderResponse.json();
 
       if (!orderData.success) {
-        alert("Unable to create payment order.");
+        alert(
+          "Unable to create payment order."
+        );
+
         setLoading(false);
         return;
       }
+
+      /* RAZORPAY OPTIONS */
 
       const options = {
         key: "rzp_test_TSNJrkr76zwuFl",
 
-        amount: orderData.order.amount,
+        amount:
+          orderData.order.amount,
 
         currency: "INR",
 
         name: "StyleAI",
 
-        description: "StyleAI Fashion Purchase",
+        description:
+          "StyleAI Fashion Purchase",
 
-        order_id: orderData.order.id,
+        order_id:
+          orderData.order.id,
 
         prefill: {
           name: customer.name,
@@ -118,32 +214,102 @@ function Checkout() {
           color: "#9b5cff",
         },
 
-        handler: async function (response) {
+        handler: async function (
+          response
+        ) {
           try {
-            const verifyResponse = await fetch(
-              "http://localhost:5000/verify-payment",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify(response),
-              }
-            );
+            const verifyResponse =
+              await fetch(
+                "http://localhost:5000/verify-payment",
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+
+                  body: JSON.stringify(
+                    response
+                  ),
+                }
+              );
 
             const verifyData =
               await verifyResponse.json();
 
             if (verifyData.success) {
+  const newOrder = {
+    id: `STYLEAI-${Date.now()}`,
+
+    date: new Date().toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }
+    ),
+
+    paymentId:
+      verifyData.transactionId,
+
+    total: cartTotal,
+
+    customer: {
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address,
+    },
+
+    items: cartItems.map((item) => ({
+      id: item.id,
+      name: item.name,
+      image: item.image,
+      price: item.price,
+      quantity: item.quantity,
+      selectedColor:
+        item.selectedColor,
+      selectedSize:
+        item.selectedSize,
+    })),
+  };
+
+  const savedOrders =
+    localStorage.getItem(
+      "styleai-orders"
+    );
+
+  const existingOrders = savedOrders
+    ? JSON.parse(savedOrders)
+    : [];
+
+  existingOrders.push(newOrder);
+
+  localStorage.setItem(
+    "styleai-orders",
+    JSON.stringify(existingOrders)
+  );
+
+  alert(
+    `Payment Successful!\n\nTransaction ID: ${verifyData.transactionId}`
+  );
+
+  navigate("/order");
+} else {
               alert(
-                `Payment Successful!\n\nTransaction ID: ${verifyData.transactionId}`
+                "Payment verification failed."
               );
-            } else {
-              alert("Payment verification failed.");
             }
           } catch (error) {
             console.error(error);
-            alert("Unable to verify payment.");
+
+            alert(
+              "Unable to verify payment."
+            );
+          } finally {
+            setLoading(false);
           }
         },
 
@@ -154,21 +320,29 @@ function Checkout() {
         },
       };
 
-      const razorpay = new window.Razorpay(options);
+      /* OPEN RAZORPAY */
 
-      razorpay.on("payment.failed", function (response) {
-        console.error(response.error);
-
-        alert(
-          `Payment Failed\n\n${response.error.description}`
+      const razorpay =
+        new window.Razorpay(
+          options
         );
 
-        setLoading(false);
-      });
+      razorpay.on(
+        "payment.failed",
+        function (response) {
+          console.error(
+            response.error
+          );
+
+          alert(
+            `Payment Failed\n\n${response.error.description}`
+          );
+
+          setLoading(false);
+        }
+      );
 
       razorpay.open();
-
-      setLoading(false);
 
     } catch (error) {
       console.error(error);
@@ -181,25 +355,41 @@ function Checkout() {
     }
   };
 
+  /* =====================================================
+     PAGE
+     ===================================================== */
+
   return (
     <div className="checkout-page">
 
-      <Link to="/" className="back-home">
+      <Link
+        to="/"
+        className="back-home"
+      >
         ← Back to Home
       </Link>
 
       <div className="checkout-header">
-        <p>STYLEAI SECURE CHECKOUT</p>
-        <h1>Checkout</h1>
+
+        <p>
+          STYLEAI SECURE CHECKOUT
+        </p>
+
+        <h1>
+          Checkout
+        </h1>
+
       </div>
 
       <div className="checkout-container">
 
-        {/* SHIPPING DETAILS */}
+        {/* ================= SHIPPING ================= */}
 
         <div className="shipping-form">
 
-          <h2>Shipping Details</h2>
+          <h2>
+            Shipping Details
+          </h2>
 
           <input
             type="text"
@@ -234,13 +424,16 @@ function Checkout() {
 
         </div>
 
-        {/* ORDER SUMMARY */}
+        {/* ================= ORDER SUMMARY ================= */}
 
         <div className="order-summary">
 
-          <h2>Order Summary</h2>
+          <h2>
+            Order Summary
+          </h2>
 
           {cartItems.map((item) => (
+
             <div
               className="checkout-item"
               key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
@@ -252,7 +445,10 @@ function Checkout() {
               />
 
               <div>
-                <h3>{item.name}</h3>
+
+                <h3>
+                  {item.name}
+                </h3>
 
                 <p>
                   {item.selectedColor} /{" "}
@@ -262,21 +458,29 @@ function Checkout() {
                 <p>
                   Qty: {item.quantity}
                 </p>
+
               </div>
 
               <strong>
-                ₹{item.price * item.quantity}
+                ₹
+                {item.price *
+                  item.quantity}
               </strong>
 
             </div>
+
           ))}
 
           <div className="checkout-total">
-            <span>Total</span>
+
+            <span>
+              Total
+            </span>
 
             <strong>
               ₹{cartTotal}
             </strong>
+
           </div>
 
           <button

@@ -4,7 +4,9 @@ const dotenv = require("dotenv");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
-dotenv.config();
+dotenv.config({
+  path: "../.env",
+});
 
 const app = express();
 

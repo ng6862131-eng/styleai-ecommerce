@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import {
   FaArrowLeft,
   FaEnvelope,
@@ -10,6 +14,7 @@ import {
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,7 +56,9 @@ function Login() {
       "true"
     );
 
-    navigate("/");
+    navigate(
+  location.state?.from || "/"
+);
   };
 
   return (
