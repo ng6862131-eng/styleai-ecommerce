@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+
 import {
   FaArrowLeft,
   FaUser,
@@ -6,10 +7,19 @@ import {
   FaShoppingBag,
   FaHeart,
   FaSignOutAlt,
+  FaBoxOpen,
+  FaChevronRight,
 } from "react-icons/fa";
+
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 function Profile() {
   const navigate = useNavigate();
+
+  const { cartCount } = useCart();
+
+  const { wishlistCount } = useWishlist();
 
   const savedUser = localStorage.getItem(
     "styleai-user"
@@ -19,6 +29,16 @@ function Profile() {
     ? JSON.parse(savedUser)
     : null;
 
+  const savedOrders = localStorage.getItem(
+    "styleai-orders"
+  );
+
+  const orders = savedOrders
+    ? JSON.parse(savedOrders)
+    : [];
+
+  /* ================= LOGOUT ================= */
+
   const handleLogout = () => {
     localStorage.removeItem(
       "styleai-logged-in"
@@ -27,11 +47,17 @@ function Profile() {
     navigate("/login");
   };
 
+  /* ================= NOT LOGGED IN ================= */
+
   if (!user) {
     return (
       <div className="profile-page">
 
         <div className="profile-empty">
+
+          <div className="profile-empty-icon">
+            <FaUser />
+          </div>
 
           <h1>
             Please Login
@@ -57,7 +83,7 @@ function Profile() {
   return (
     <div className="profile-page">
 
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
 
       <div className="profile-header">
 
@@ -78,9 +104,11 @@ function Profile() {
 
       </div>
 
-      {/* CONTENT */}
+      {/* ================= MAIN ================= */}
 
       <main className="profile-content">
+
+        {/* ================= TITLE ================= */}
 
         <div className="profile-title">
 
@@ -99,7 +127,7 @@ function Profile() {
 
         </div>
 
-        {/* ACCOUNT CARD */}
+        {/* ================= ACCOUNT CARD ================= */}
 
         <section className="profile-card">
 
@@ -137,9 +165,77 @@ function Profile() {
 
         </section>
 
-        {/* ACCOUNT OPTIONS */}
+        {/* ================= STATISTICS ================= */}
+
+        <div className="profile-stats">
+
+          <div className="profile-stat">
+
+            <div className="profile-stat-icon">
+              <FaBoxOpen />
+            </div>
+
+            <div>
+
+              <strong>
+                {orders.length}
+              </strong>
+
+              <span>
+                Orders
+              </span>
+
+            </div>
+
+          </div>
+
+          <div className="profile-stat">
+
+            <div className="profile-stat-icon">
+              <FaHeart />
+            </div>
+
+            <div>
+
+              <strong>
+                {wishlistCount}
+              </strong>
+
+              <span>
+                Wishlist
+              </span>
+
+            </div>
+
+          </div>
+
+          <div className="profile-stat">
+
+            <div className="profile-stat-icon">
+              <FaShoppingBag />
+            </div>
+
+            <div>
+
+              <strong>
+                {cartCount}
+              </strong>
+
+              <span>
+                Cart Items
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* ================= OPTIONS ================= */}
 
         <div className="profile-options">
+
+          {/* ORDERS */}
 
           <Link
             to="/order"
@@ -150,7 +246,8 @@ function Profile() {
               <FaShoppingBag />
             </div>
 
-            <div>
+            <div className="profile-option-content">
+
               <strong>
                 My Orders
               </strong>
@@ -158,9 +255,16 @@ function Profile() {
               <span>
                 View your orders and purchases
               </span>
+
             </div>
 
+            <FaChevronRight
+              className="profile-option-arrow"
+            />
+
           </Link>
+
+          {/* WISHLIST */}
 
           <Link
             to="/wishlist"
@@ -171,7 +275,8 @@ function Profile() {
               <FaHeart />
             </div>
 
-            <div>
+            <div className="profile-option-content">
+
               <strong>
                 Wishlist
               </strong>
@@ -179,9 +284,45 @@ function Profile() {
               <span>
                 View your saved fashion items
               </span>
+
             </div>
 
+            <FaChevronRight
+              className="profile-option-arrow"
+            />
+
           </Link>
+
+          {/* CART */}
+
+          <Link
+            to="/cart"
+            className="profile-option"
+          >
+
+            <div className="profile-option-icon">
+              <FaShoppingBag />
+            </div>
+
+            <div className="profile-option-content">
+
+              <strong>
+                Shopping Cart
+              </strong>
+
+              <span>
+                Continue with your shopping
+              </span>
+
+            </div>
+
+            <FaChevronRight
+              className="profile-option-arrow"
+            />
+
+          </Link>
+
+          {/* EMAIL */}
 
           <div className="profile-option">
 
@@ -189,7 +330,8 @@ function Profile() {
               <FaEnvelope />
             </div>
 
-            <div>
+            <div className="profile-option-content">
+
               <strong>
                 Account Email
               </strong>
@@ -197,13 +339,14 @@ function Profile() {
               <span>
                 {user.email}
               </span>
+
             </div>
 
           </div>
 
         </div>
 
-        {/* LOGOUT */}
+        {/* ================= LOGOUT ================= */}
 
         <button
           className="profile-logout"

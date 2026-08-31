@@ -5,34 +5,44 @@ import {
   FaHeart,
 } from "react-icons/fa";
 
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import {
+  Link,
+  useLocation,
+} from "react-router-dom";
+
+import { useEffect, useState } from "react";
 
 import { useCart } from "../context/CartContext";
 
 function Navbar() {
   const { cartCount } = useCart();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () =>
-      localStorage.getItem(
-        "styleai-logged-in"
-      ) === "true"
-  );
+  const location = useLocation();
 
-  const handleAccountClick = () => {
-    const loggedIn =
-      localStorage.getItem(
-        "styleai-logged-in"
-      ) === "true";
+  const [isLoggedIn, setIsLoggedIn] =
+    useState(false);
 
-    setIsLoggedIn(loggedIn);
-  };
+  /* ================= CHECK LOGIN ================= */
+
+  useEffect(() => {
+    const checkLogin = () => {
+      const loggedIn =
+        localStorage.getItem(
+          "styleai-logged-in"
+        ) === "true";
+
+      setIsLoggedIn(loggedIn);
+    };
+
+    checkLogin();
+  }, [location]);
+
+  /* ================= NAVBAR ================= */
 
   return (
     <nav className="navbar">
 
-      {/* LOGO */}
+      {/* ================= LOGO ================= */}
 
       <Link
         to="/"
@@ -41,7 +51,7 @@ function Navbar() {
         STYLE<span>AI</span>
       </Link>
 
-      {/* NAVIGATION */}
+      {/* ================= NAVIGATION ================= */}
 
       <div className="nav-links">
 
@@ -63,7 +73,7 @@ function Navbar() {
 
       </div>
 
-      {/* ACTIONS */}
+      {/* ================= ACTIONS ================= */}
 
       <div className="nav-actions">
 
@@ -89,24 +99,21 @@ function Navbar() {
 
         {/* ACCOUNT */}
 
-        {isLoggedIn ? (
-          <Link
-            to="/profile"
-            className="icon-btn"
-            title="My Account"
-            onClick={handleAccountClick}
-          >
-            <FaUser />
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            className="icon-btn"
-            title="Login"
-          >
-            <FaUser />
-          </Link>
-        )}
+        <Link
+          to={
+            isLoggedIn
+              ? "/profile"
+              : "/login"
+          }
+          className="icon-btn"
+          title={
+            isLoggedIn
+              ? "My Account"
+              : "Login"
+          }
+        >
+          <FaUser />
+        </Link>
 
         {/* CART */}
 

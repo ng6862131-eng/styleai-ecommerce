@@ -1,10 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+
 import {
   FaSearch,
   FaSlidersH,
   FaChevronDown,
   FaArrowRight,
+  FaTshirt,
+  FaShoppingBag,
+  FaShoePrints,
+  FaStar,
 } from "react-icons/fa";
 
 import ProductCard from "../components/ProductCard";
@@ -18,11 +23,30 @@ function Shop() {
   const [showFilters, setShowFilters] = useState(false);
 
   const categories = [
-    "All",
-    "Men",
-    "Women",
-    "Shoes",
-    "Accessories",
+    {
+      name: "Men",
+      description: "Modern styles for men",
+      icon: <FaTshirt />,
+      className: "men",
+    },
+    {
+      name: "Women",
+      description: "Trending fashion for women",
+      icon: <FaTshirt />,
+      className: "women",
+    },
+    {
+      name: "Shoes",
+      description: "Step into your style",
+      icon: <FaShoePrints />,
+      className: "shoes",
+    },
+    {
+      name: "Accessories",
+      description: "Complete your look",
+      icon: <FaShoppingBag />,
+      className: "accessories",
+    },
   ];
 
   const filteredProducts = useMemo(() => {
@@ -63,10 +87,17 @@ function Shop() {
     return result;
   }, [category, search, maxPrice, sort]);
 
+  const clearFilters = () => {
+    setCategory("All");
+    setSearch("");
+    setMaxPrice(3000);
+    setSort("featured");
+  };
+
   return (
     <div className="shop-page">
 
-      {/* TOP BAR */}
+      {/* ================= TOP BAR ================= */}
 
       <div className="shop-topbar">
 
@@ -80,7 +111,7 @@ function Shop() {
 
       </div>
 
-      {/* HERO */}
+      {/* ================= HERO ================= */}
 
       <section className="shop-hero">
 
@@ -103,27 +134,40 @@ function Shop() {
           </p>
 
           <div className="shop-hero-line">
+
             <span></span>
 
             <small>
               {products.length} curated pieces
             </small>
+
           </div>
 
         </div>
 
+        {/* HERO CIRCLE */}
+
         <div className="shop-hero-side">
 
           <div className="hero-circle">
-            <span>STYLE</span>
-            <strong>AI</strong>
+
+            <div className="hero-circle-ring"></div>
+
+            <span>
+              STYLE
+            </span>
+
+            <strong>
+              AI
+            </strong>
+
           </div>
 
         </div>
 
       </section>
 
-      {/* SEARCH */}
+      {/* ================= SEARCH / CONTROLS ================= */}
 
       <section className="shop-controls">
 
@@ -142,7 +186,11 @@ function Shop() {
 
           {search && (
             <button
-              onClick={() => setSearch("")}
+              type="button"
+              className="clear-search"
+              onClick={() =>
+                setSearch("")
+              }
             >
               ×
             </button>
@@ -150,10 +198,11 @@ function Shop() {
 
         </div>
 
-        {/* FILTER */}
-
         <button
-          className="filter-toggle"
+          type="button"
+          className={`filter-toggle ${
+            showFilters ? "active" : ""
+          }`}
           onClick={() =>
             setShowFilters(!showFilters)
           }
@@ -161,8 +210,6 @@ function Shop() {
           <FaSlidersH />
           Filters
         </button>
-
-        {/* SORT */}
 
         <div className="sort-wrapper">
 
@@ -189,24 +236,28 @@ function Shop() {
             <option value="rating">
               Highest Rated
             </option>
-
           </select>
 
         </div>
 
       </section>
 
-      {/* PRICE FILTER */}
+      {/* ================= FILTER PANEL ================= */}
 
       {showFilters && (
-
         <section className="shop-filter-panel">
 
           <div className="filter-title">
 
-            <span>
-              Maximum Price
-            </span>
+            <div>
+              <span>
+                Price Range
+              </span>
+
+              <small>
+                Set your maximum budget
+              </small>
+            </div>
 
             <strong>
               ₹{maxPrice}
@@ -228,15 +279,21 @@ function Shop() {
           />
 
           <div className="price-labels">
-            <span>₹399</span>
-            <span>₹3000</span>
+
+            <span>
+              ₹399
+            </span>
+
+            <span>
+              ₹3000
+            </span>
+
           </div>
 
         </section>
-
       )}
 
-      {/* CATEGORIES */}
+      {/* ================= CATEGORIES ================= */}
 
       <section className="shop-categories">
 
@@ -252,35 +309,109 @@ function Shop() {
               Shop by category
             </h2>
 
+            <p>
+              Find pieces that match your
+              personality and everyday style.
+            </p>
+
           </div>
 
-          <p>
-            {filteredProducts.length} products found
-          </p>
+          <div className="category-result">
+
+            <strong>
+              {filteredProducts.length}
+            </strong>
+
+            <span>
+              products found
+            </span>
+
+          </div>
 
         </div>
 
-        <div className="category-pills">
+        <div className="category-cards">
+
+          {/* ALL */}
+
+          <button
+            type="button"
+            className={`category-card all ${
+              category === "All"
+                ? "selected"
+                : ""
+            }`}
+            onClick={() =>
+              setCategory("All")
+            }
+          >
+
+            <div className="category-card-icon">
+              <FaStar />
+            </div>
+
+            <div className="category-card-content">
+
+              <span>
+                COLLECTION
+              </span>
+
+              <h3>
+                All Styles
+              </h3>
+
+              <p>
+                Explore the full StyleAI collection
+              </p>
+
+            </div>
+
+            <div className="category-card-arrow">
+              <FaArrowRight />
+            </div>
+
+          </button>
+
+          {/* OTHER CATEGORIES */}
 
           {categories.map((item) => (
 
             <button
-              key={item}
-              className={
-                category === item
-                  ? "category-pill active"
-                  : "category-pill"
-              }
+              type="button"
+              key={item.name}
+              className={`category-card ${item.className} ${
+                category === item.name
+                  ? "selected"
+                  : ""
+              }`}
               onClick={() =>
-                setCategory(item)
+                setCategory(item.name)
               }
             >
 
-              {item}
+              <div className="category-card-icon">
+                {item.icon}
+              </div>
 
-              {category === item && (
+              <div className="category-card-content">
+
+                <span>
+                  {item.name}
+                </span>
+
+                <h3>
+                  {item.name}
+                </h3>
+
+                <p>
+                  {item.description}
+                </p>
+
+              </div>
+
+              <div className="category-card-arrow">
                 <FaArrowRight />
-              )}
+              </div>
 
             </button>
 
@@ -290,9 +421,79 @@ function Shop() {
 
       </section>
 
-      {/* PRODUCTS */}
+      {/* ================= ACTIVE FILTER ================= */}
+
+      {(category !== "All" ||
+        search ||
+        maxPrice < 3000) && (
+
+        <div className="active-filter-bar">
+
+          <div>
+
+            <span>
+              Showing:
+            </span>
+
+            <strong>
+              {category === "All"
+                ? "All styles"
+                : category}
+            </strong>
+
+            {search && (
+              <>
+                <span>
+                  for
+                </span>
+
+                <strong>
+                  "{search}"
+                </strong>
+              </>
+            )}
+
+          </div>
+
+          <button
+            type="button"
+            onClick={clearFilters}
+          >
+            Clear all
+          </button>
+
+        </div>
+
+      )}
+
+      {/* ================= PRODUCTS ================= */}
 
       <section className="shop-products">
+
+        <div className="products-section-header">
+
+          <div>
+
+            <span>
+              STYLEAI COLLECTION
+            </span>
+
+            <h2>
+              {category === "All"
+                ? "Featured pieces"
+                : `${category} collection`}
+            </h2>
+
+          </div>
+
+          <small>
+            {filteredProducts.length}{" "}
+            {filteredProducts.length === 1
+              ? "item"
+              : "items"}
+          </small>
+
+        </div>
 
         {filteredProducts.length > 0 ? (
 
@@ -306,7 +507,7 @@ function Shop() {
                   key={product.id}
                   style={{
                     animationDelay:
-                      `${index * 0.05}s`,
+                      `${index * 0.06}s`,
                   }}
                 >
 
@@ -325,25 +526,24 @@ function Shop() {
 
           <div className="no-products">
 
-            <div>0</div>
+            <div className="no-products-number">
+              0
+            </div>
 
             <h2>
               No styles found
             </h2>
 
             <p>
-              Try another search or increase
-              your price range.
+              Try another search,
+              category or price range.
             </p>
 
             <button
-              onClick={() => {
-                setSearch("");
-                setCategory("All");
-                setMaxPrice(3000);
-              }}
+              type="button"
+              onClick={clearFilters}
             >
-              Clear Filters
+              Explore All Styles
             </button>
 
           </div>
