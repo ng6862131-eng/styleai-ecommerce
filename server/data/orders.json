@@ -1,0 +1,140 @@
+[
+  {
+    "id": "STYLEAI-1788834806986",
+    "razorpayOrderId": "order_TZNXTJgHw5cH1I",
+    "date": "08 Sept 2026",
+    "paymentId": "pay_TZNYnVDw1hmHer",
+    "paymentStatus": "Paid",
+    "subtotal": 5344,
+    "discount": 0,
+    "couponCode": null,
+    "couponLabel": null,
+    "total": 5344,
+    "customer": {
+      "name": "Nikhil Gaikwad",
+      "email": "sg6862131@gmail.com",
+      "phone": "9987441031",
+      "address": "kjbadfkdjgfiyefiydfkbkgyfkzf"
+    },
+    "items": [
+      {
+        "id": 1,
+        "name": "Classic Black T-Shirt - Custom T-Shirt",
+        "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+        "price": 899,
+        "quantity": 1,
+        "selectedColor": "Black",
+        "selectedSize": "M",
+        "customization": {
+          "productType": "T-Shirt",
+          "pattern": "plain",
+          "text": "",
+          "textColor": "#ffffff"
+        }
+      },
+      {
+        "id": 14,
+        "name": "Classic Formal Shirt",
+        "image": "https://images.unsplash.com/photo-1596755094514-f87e34085b2c",
+        "price": 1099,
+        "quantity": 1,
+        "selectedColor": "White",
+        "selectedSize": "S",
+        "customization": null
+      },
+      {
+        "id": 1,
+        "name": "Classic Black T-Shirt - Custom T-Shirt",
+        "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+        "price": 899,
+        "quantity": 1,
+        "selectedColor": "Black",
+        "selectedSize": "S",
+        "customization": {
+          "productType": "T-Shirt",
+          "pattern": "plain",
+          "text": "nik",
+          "textColor": "#ffffff"
+        }
+      },
+      {
+        "id": 40,
+        "name": "Classic Cap",
+        "image": "https://images.unsplash.com/photo-1521369909029-2afed882baee",
+        "price": 449,
+        "quantity": 1,
+        "selectedColor": "Default",
+        "selectedSize": "Standard",
+        "customization": null
+      },
+      {
+        "id": 15,
+        "name": "Beige Casual Trousers",
+        "image": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80",
+        "price": 1199,
+        "quantity": 1,
+        "selectedColor": "Default",
+        "selectedSize": "Standard",
+        "customization": null
+      },
+      {
+        "id": 2,
+        "name": "Oversized Streetwear T-Shirt",
+        "image": "https://images.unsplash.com/photo-1503341504253-dff4815485f1",
+        "price": 799,
+        "quantity": 1,
+        "selectedColor": "Default",
+        "selectedSize": "Standard",
+        "customization": null
+      }
+    ],
+    "emailSent": false,
+    "emailError": "Invalid login: 535-5.7.8 Username and Password not accepted. For more information, go to\n535 5.7.8  https://support.google.com/mail/?p=BadCredentials 5a478bee46e88-33825669695sm9244054eec.3 - gsmtp"
+  },
+  {
+    "id": "STYLEAI-1788886375445",
+    "razorpayOrderId": "order_TZcC6AZgPNJ2bx",
+    "date": "08 Sept 2026",
+    "paymentId": "pay_TZcCi5uCuR12Oj",
+    "paymentStatus": "Paid",
+    "subtotal": 1348,
+    "discount": 0,
+    "couponCode": null,
+    "couponLabel": null,
+    "total": 1348,
+    "customer": {
+      "name": "Nikhil Gaikwad",
+      "email": "sg6862131@gmail.com",
+      "phone": "699744555454545",
+      "address": "ouffraeheUORHUORHUOshruoSR"
+    },
+    "items": [
+      {
+        "id": 1,
+        "name": "Classic Black T-Shirt - Custom T-Shirt",
+        "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+        "price": 899,
+        "quantity": 1,
+        "selectedColor": "Black",
+        "selectedSize": "M",
+        "customization": {
+          "productType": "T-Shirt",
+          "pattern": "plain",
+          "text": "",
+          "textColor": "#ffffff"
+        }
+      },
+      {
+        "id": 40,
+        "name": "Classic Cap",
+        "image": "https://images.unsplash.com/photo-1521369909029-2afed882baee",
+        "price": 449,
+        "quantity": 1,
+        "selectedColor": "Default",
+        "selectedSize": "Standard",
+        "customization": null
+      }
+    ],
+    "emailSent": true
+  }
+]

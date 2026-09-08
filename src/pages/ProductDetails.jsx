@@ -397,35 +397,40 @@ function ProductDetails() {
 
           <div className="details-buttons">
 
-            <button
-              className={`add-cart-large ${
-                added ? "added" : ""
-              }`}
-              onClick={handleAddToCart}
-            >
+  <button
+    className={`add-cart-large ${
+      added ? "added" : ""
+    }`}
+    onClick={handleAddToCart}
+  >
+    {added ? (
+      <>
+        <FaCheck />
+        Added to Cart
+      </>
+    ) : (
+      <>
+        <FaShoppingBag />
+        Add to Cart
+      </>
+    )}
+  </button>
 
-              {added ? (
-                <>
-                  <FaCheck />
-                  Added to Cart
-                </>
-              ) : (
-                <>
-                  <FaShoppingBag />
-                  Add to Cart
-                </>
-              )}
+  <button
+    className="buy-now-btn"
+    onClick={handleBuyNow}
+  >
+    Buy Now
+  </button>
 
-            </button>
+  <Link
+    to={`/customize/${product.id}`}
+    className="customize-product-btn"
+  >
+    ✨ Customize in 3D
+  </Link>
 
-            <button
-              className="buy-now-btn"
-              onClick={handleBuyNow}
-            >
-              Buy Now
-            </button>
-
-          </div>
+</div>
 
           {/* BENEFITS */}
 

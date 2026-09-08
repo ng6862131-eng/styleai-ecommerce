@@ -14,67 +14,92 @@ import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import Order from "./pages/Order";
 import Wishlist from "./pages/Wishlist";
+import Customize3D from "./pages/Customize3D";
+import AiChatbot from "./components/AiChatbot";
+import About from "./pages/About";
+
 function App() {
   return (
     <BrowserRouter>
-
       <Routes>
 
-        {/* HOME */}
+        {/* ================= HOME ================= */}
         <Route
           path="/"
           element={<Home />}
         />
 
-        {/* SHOP */}
+        {/* ================= SHOP ================= */}
         <Route
           path="/shop"
           element={<Shop />}
         />
 
-        {/* PRODUCT DETAILS */}
+        {/* ================= PRODUCT DETAILS ================= */}
         <Route
           path="/product/:id"
           element={<ProductDetails />}
         />
 
-        {/* CART */}
+        {/* ================= CART ================= */}
         <Route
           path="/cart"
           element={<Cart />}
         />
+
+        {/* ================= LOGIN ================= */}
         <Route
           path="/login"
           element={<Login />}
         />
-        {/* CHECKOUT */}
+
+        {/* ================= REGISTER ================= */}
+        <Route
+          path="/register"
+          element={<Register />}
+        />
+
+        {/* ================= CHECKOUT ================= */}
         <Route
           path="/checkout"
           element={<Checkout />}
         />
 
-        <Route
-         path="/register"
-         element={<Register />}
-        />
-
+        {/* ================= PROFILE ================= */}
         <Route
           path="/profile"
           element={<Profile />}
         />
 
+        {/* ================= ORDERS ================= */}
         <Route
           path="/orders"
           element={<Order />}
         />
 
+        {/* ================= WISHLIST ================= */}
         <Route
           path="/wishlist"
           element={<Wishlist />}
         />
 
-      </Routes>
+        {/* ================= AI STYLIST ================= */}
+        <Route
+          path="/ai"
+          element={<AiChatbot />}
+        />
 
+        {/* ================= 3D CUSTOMIZER ================= */}
+        <Route
+          path="/customize/:id"
+          element={<Customize3D />}
+        />
+        <Route
+        path="/about"
+        element={<About />}
+        />
+
+      </Routes>
     </BrowserRouter>
   );
 }

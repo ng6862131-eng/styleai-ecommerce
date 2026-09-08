@@ -1,25 +1,44 @@
-import { createContext, useContext, useState } from "react";
-
+import {
+  createContext,
+  useContext,
+  useState,
+} from "react";
 
 const CartContext = createContext();
 
-// ================= CART PROVIDER =================
+/* =========================================================
+   CART PROVIDER
+========================================================= */
 
 export function CartProvider({ children }) {
+
   const [cartItems, setCartItems] = useState(() => {
-    const savedCart = localStorage.getItem("styleai-cart");
+
+    const savedCart =
+      localStorage.getItem("styleai-cart");
 
     try {
-      return savedCart ? JSON.parse(savedCart) : [];
+      return savedCart
+        ? JSON.parse(savedCart)
+        : [];
     } catch (error) {
-      console.error("Error loading cart:", error);
+
+      console.error(
+        "Error loading cart:",
+        error
+      );
+
       return [];
     }
   });
 
-  // ================= SAVE CART =================
+
+  /* =======================================================
+     SAVE CART
+  ======================================================= */
 
   const saveCart = (updatedCart) => {
+
     setCartItems(updatedCart);
 
     localStorage.setItem(
@@ -28,7 +47,50 @@ export function CartProvider({ children }) {
     );
   };
 
-  // ================= ADD TO CART =================
+
+  /* =======================================================
+     CREATE ITEM KEY
+  ======================================================= */
+
+  const getItemKey = (
+    product,
+    selectedColor,
+    selectedSize
+  ) => {
+
+    const customization =
+      product.customization;
+
+    const customizationKey =
+      customization
+        ? JSON.stringify({
+            productType:
+              customization.productType ||
+              "",
+            pattern:
+              customization.pattern ||
+              "",
+            text:
+              customization.text ||
+              "",
+            textColor:
+              customization.textColor ||
+              "",
+          })
+        : "";
+
+    return [
+      product.id,
+      selectedColor,
+      selectedSize,
+      customizationKey,
+    ].join("|");
+  };
+
+
+  /* =======================================================
+     ADD TO CART
+  ======================================================= */
 
   const addToCart = (
     product,
@@ -36,122 +98,270 @@ export function CartProvider({ children }) {
     selectedSize = "Standard",
     quantity = 1
   ) => {
-    const existingItem = cartItems.find(
-      (item) =>
-        item.id === product.id &&
-        item.selectedColor === selectedColor &&
-        item.selectedSize === selectedSize
-    );
+
+    const newItemKey =
+      getItemKey(
+        product,
+        selectedColor,
+        selectedSize
+      );
+
+
+    const existingItem =
+      cartItems.find(
+        (item) =>
+          getItemKey(
+            item,
+            item.selectedColor,
+            item.selectedSize
+          ) === newItemKey
+      );
+
 
     let updatedCart;
 
+
+    /* ================= EXISTING ITEM ================= */
+
     if (existingItem) {
-      updatedCart = cartItems.map((item) =>
-        item.id === product.id &&
-        item.selectedColor === selectedColor &&
-        item.selectedSize === selectedSize
-          ? {
+
+      updatedCart =
+        cartItems.map((item) => {
+
+          const itemKey =
+            getItemKey(
+              item,
+              item.selectedColor,
+              item.selectedSize
+            );
+
+
+          if (itemKey === newItemKey) {
+
+            return {
               ...item,
-              quantity: item.quantity + quantity,
-            }
-          : item
-      );
-    } else {
+
+              quantity:
+                Number(item.quantity || 0) +
+                Number(quantity || 0),
+            };
+          }
+
+
+          return item;
+        });
+    }
+
+
+    /* ================= NEW ITEM ================= */
+
+    else {
+
       updatedCart = [
         ...cartItems,
+
         {
           ...product,
+
           selectedColor,
+
           selectedSize,
-          quantity,
+
+          quantity:
+            Number(quantity || 1),
+
+          customization:
+            product.customization
+              ? {
+                  ...product.customization,
+                }
+              : null,
         },
       ];
     }
 
+
     saveCart(updatedCart);
   };
 
-  // ================= REMOVE FROM CART =================
+
+  /* =======================================================
+     REMOVE FROM CART
+  ======================================================= */
 
   const removeFromCart = (
     id,
     selectedColor,
-    selectedSize
+    selectedSize,
+    customization = null
   ) => {
-    const updatedCart = cartItems.filter(
-      (item) =>
-        !(
-          item.id === id &&
-          item.selectedColor === selectedColor &&
-          item.selectedSize === selectedSize
-        )
-    );
+
+    const targetKey =
+      getItemKey(
+        {
+          id,
+          customization,
+        },
+        selectedColor,
+        selectedSize
+      );
+
+
+    const updatedCart =
+      cartItems.filter((item) => {
+
+        const itemKey =
+          getItemKey(
+            item,
+            item.selectedColor,
+            item.selectedSize
+          );
+
+        return itemKey !== targetKey;
+      });
+
 
     saveCart(updatedCart);
   };
 
-  // ================= INCREASE QUANTITY =================
+
+  /* =======================================================
+     INCREASE QUANTITY
+  ======================================================= */
 
   const increaseQuantity = (
     id,
     selectedColor,
-    selectedSize
+    selectedSize,
+    customization = null
   ) => {
-    const updatedCart = cartItems.map((item) =>
-      item.id === id &&
-      item.selectedColor === selectedColor &&
-      item.selectedSize === selectedSize
-        ? {
+
+    const targetKey =
+      getItemKey(
+        {
+          id,
+          customization,
+        },
+        selectedColor,
+        selectedSize
+      );
+
+
+    const updatedCart =
+      cartItems.map((item) => {
+
+        const itemKey =
+          getItemKey(
+            item,
+            item.selectedColor,
+            item.selectedSize
+          );
+
+
+        if (itemKey === targetKey) {
+
+          return {
             ...item,
-            quantity: item.quantity + 1,
-          }
-        : item
-    );
+
+            quantity:
+              Number(item.quantity || 0) + 1,
+          };
+        }
+
+
+        return item;
+      });
+
 
     saveCart(updatedCart);
   };
 
-  // ================= DECREASE QUANTITY =================
+
+  /* =======================================================
+     DECREASE QUANTITY
+  ======================================================= */
 
   const decreaseQuantity = (
     id,
     selectedColor,
-    selectedSize
+    selectedSize,
+    customization = null
   ) => {
-    const updatedCart = cartItems.map((item) =>
-      item.id === id &&
-      item.selectedColor === selectedColor &&
-      item.selectedSize === selectedSize &&
-      item.quantity > 1
-        ? {
+
+    const targetKey =
+      getItemKey(
+        {
+          id,
+          customization,
+        },
+        selectedColor,
+        selectedSize
+      );
+
+
+    const updatedCart =
+      cartItems.map((item) => {
+
+        const itemKey =
+          getItemKey(
+            item,
+            item.selectedColor,
+            item.selectedSize
+          );
+
+
+        if (
+          itemKey === targetKey &&
+          Number(item.quantity || 0) > 1
+        ) {
+
+          return {
             ...item,
-            quantity: item.quantity - 1,
-          }
-        : item
-    );
+
+            quantity:
+              Number(item.quantity || 0) - 1,
+          };
+        }
+
+
+        return item;
+      });
+
 
     saveCart(updatedCart);
   };
 
-  // ================= CART COUNT =================
 
-  const cartCount = cartItems.reduce(
-    (total, item) =>
-      total + Number(item.quantity || 0),
-    0
-  );
+  /* =======================================================
+     CART COUNT
+  ======================================================= */
 
-  // ================= CART TOTAL =================
-
-  const cartTotal = cartItems.reduce(
-    (total, item) =>
-      total +
-      Number(item.price || 0) *
+  const cartCount =
+    cartItems.reduce(
+      (total, item) =>
+        total +
         Number(item.quantity || 0),
-    0
-  );
+      0
+    );
 
-  // ================= PROVIDER =================
+
+  /* =======================================================
+     CART TOTAL
+  ======================================================= */
+
+  const cartTotal =
+    cartItems.reduce(
+      (total, item) =>
+        total +
+        Number(item.price || 0) *
+        Number(item.quantity || 0),
+      0
+    );
+
+
+  /* =======================================================
+     PROVIDER
+  ======================================================= */
 
   return (
     <CartContext.Provider
@@ -170,7 +380,10 @@ export function CartProvider({ children }) {
   );
 }
 
-// ================= USE CART =================
+
+/* =========================================================
+   USE CART
+========================================================= */
 
 export function useCart() {
   return useContext(CartContext);

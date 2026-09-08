@@ -124,7 +124,7 @@ const products = [
     sizes: ["S", "M", "L", "XL"],
     occasions: ["College", "Casual", "Vacation"],
     image:
-      "https://images.unsplash.com/photo-1625910513413-5fc45d44a6a0",
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
   },
 
   {
@@ -545,6 +545,266 @@ const products = [
     occasions: ["College", "Casual", "Sports"],
     image:
       "https://images.unsplash.com/photo-1521369909029-2afed882baee",
+  },
+    // =====================================================
+  // MORE MEN
+  // =====================================================
+
+  {
+    id: 43,
+    name: "Olive Casual Overshirt",
+    category: "Men",
+    gender: "Men",
+    price: 999,
+    rating: 4.5,
+    colors: ["Olive", "Black", "Beige"],
+    sizes: ["S", "M", "L", "XL"],
+    occasions: ["Casual", "College"],
+    image:
+      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3",
+  },
+
+  {
+    id: 44,
+    name: "Navy Casual Shirt",
+    category: "Men",
+    gender: "Men",
+    price: 899,
+    rating: 4.6,
+    colors: ["Navy", "White"],
+    sizes: ["S", "M", "L", "XL"],
+    occasions: ["Casual", "Office"],
+    image:
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf",
+  },
+
+  {
+    id: 45,
+    name: "Grey Knit Sweater",
+    category: "Men",
+    gender: "Men",
+    price: 1299,
+    rating: 4.7,
+    colors: ["Grey", "Black", "Cream"],
+    sizes: ["M", "L", "XL"],
+    occasions: ["Casual", "College", "Winter"],
+    image:
+      "https://images.unsplash.com/photo-1610652492500-ded49ceeb378",
+  },
+
+  {
+    id: 46,
+    name: "Men's Relaxed Hoodie",
+    category: "Men",
+    gender: "Men",
+    price: 1199,
+    rating: 4.6,
+    colors: ["Black", "Grey", "Navy"],
+    sizes: ["S", "M", "L", "XL"],
+    occasions: ["College", "Casual"],
+    image:
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7",
+  },
+
+  {
+    id: 47,
+    name: "Classic Denim Shirt",
+    category: "Men",
+    gender: "Men",
+    price: 1099,
+    rating: 4.5,
+    colors: ["Blue", "Dark Blue"],
+    sizes: ["S", "M", "L", "XL"],
+    occasions: ["Casual", "College"],
+    image:
+      "https://images.unsplash.com/photo-1578932750294-f5075e85f44a",
+  },
+
+  // =====================================================
+  // MORE WOMEN
+  // =====================================================
+
+  {
+    id: 48,
+    name: "Women’s Satin Blouse",
+    category: "Women",
+    gender: "Women",
+    price: 999,
+    rating: 4.7,
+    colors: ["White", "Black", "Pink"],
+    sizes: ["S", "M", "L"],
+    occasions: ["Formal", "Party", "Office"],
+    image:
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1",
+  },
+
+  {
+    id: 49,
+    name: "Pleated Midi Dress",
+    category: "Women",
+    gender: "Women",
+    price: 1599,
+    rating: 4.8,
+    colors: ["Blue", "Green", "Black"],
+    sizes: ["S", "M", "L"],
+    occasions: ["Party", "Formal", "Vacation"],
+    image:
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446",
+  },
+
+  {
+    id: 50,
+    name: "Women's Linen Shirt",
+    category: "Women",
+    gender: "Women",
+    price: 899,
+    rating: 4.5,
+    colors: ["White", "Beige", "Blue"],
+    sizes: ["S", "M", "L", "XL"],
+    occasions: ["Casual", "Vacation", "College"],
+    image:
+      "https://images.unsplash.com/photo-1604322431548-8c3e1d9f1e58",
+  },
+
+  {
+    id: 51,
+    name: "High Neck Knit Top",
+    category: "Women",
+    gender: "Women",
+    price: 799,
+    rating: 4.6,
+    colors: ["Black", "Cream", "Brown"],
+    sizes: ["S", "M", "L"],
+    occasions: ["Casual", "College"],
+    image:
+      "https://images.unsplash.com/photo-1548624313-0396c75ce0ca",
+  },
+
+  {
+    id: 52,
+    name: "Elegant Wrap Dress",
+    category: "Women",
+    gender: "Women",
+    price: 1499,
+    rating: 4.8,
+    colors: ["Wine", "Black", "Green"],
+    sizes: ["S", "M", "L"],
+    occasions: ["Party", "Formal"],
+    image:
+      "https://images.unsplash.com/photo-1566174053879-31528523f8ae",
+  },
+
+  {
+    id: 53,
+    name: "Women's Oversized Blazer",
+    category: "Women",
+    gender: "Women",
+    price: 1799,
+    rating: 4.8,
+    colors: ["Black", "Beige", "Grey"],
+    sizes: ["S", "M", "L"],
+    occasions: ["Formal", "Office", "Party"],
+    image:
+      "https://images.unsplash.com/photo-1591369822096-ffd140ec948f",
+  },
+
+  // =====================================================
+  // MORE SHOES
+  // =====================================================
+
+  {
+    id: 54,
+    name: "Retro Canvas Sneakers",
+    category: "Shoes",
+    price: 1199,
+    rating: 4.5,
+    colors: ["White", "Black", "Red"],
+    sizes: ["6", "7", "8", "9", "10"],
+    occasions: ["Casual", "College"],
+    image:
+      "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
+  },
+
+  {
+    id: 55,
+    name: "Urban High Top Shoes",
+    category: "Shoes",
+    price: 1699,
+    rating: 4.7,
+    colors: ["Black", "White", "Grey"],
+    sizes: ["6", "7", "8", "9", "10"],
+    occasions: ["College", "Casual", "Party"],
+    image:
+      "https://images.unsplash.com/photo-1520256862855-398228c41684",
+  },
+
+  {
+    id: 56,
+    name: "Comfort Walking Shoes",
+    category: "Shoes",
+    price: 1399,
+    rating: 4.6,
+    colors: ["Grey", "Black", "Blue"],
+    sizes: ["6", "7", "8", "9", "10"],
+    occasions: ["Sports", "Casual", "Travel"],
+    image:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+  },
+
+  // =====================================================
+  // MORE ACCESSORIES
+  // =====================================================
+
+  {
+    id: 57,
+    name: "Structured Tote Bag",
+    category: "Accessories",
+    price: 1399,
+    rating: 4.7,
+    colors: ["Black", "Brown", "Beige"],
+    sizes: ["Standard"],
+    occasions: ["Office", "Casual", "Formal"],
+    image:
+      "https://images.unsplash.com/photo-1594223274512-ad4803739b7c",
+  },
+
+  {
+    id: 58,
+    name: "Premium Travel Backpack",
+    category: "Accessories",
+    price: 1299,
+    rating: 4.6,
+    colors: ["Black", "Grey", "Navy"],
+    sizes: ["Standard"],
+    occasions: ["Travel", "College", "Casual"],
+    image:
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa",
+  },
+
+  {
+    id: 59,
+    name: "Minimal Silver Earrings",
+    category: "Accessories",
+    price: 549,
+    rating: 4.5,
+    colors: ["Silver", "Gold"],
+    sizes: ["Standard"],
+    occasions: ["Party", "Casual", "Formal"],
+    image:
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908",
+  },
+
+  {
+    id: 60,
+    name: "Modern Fashion Scarf",
+    category: "Accessories",
+    price: 499,
+    rating: 4.4,
+    colors: ["Black", "Beige", "Blue"],
+    sizes: ["Standard"],
+    occasions: ["Casual", "Vacation"],
+    image:
+      "https://images.unsplash.com/photo-1580651214613-f4692d6d0f1d",
   },
 ];
 

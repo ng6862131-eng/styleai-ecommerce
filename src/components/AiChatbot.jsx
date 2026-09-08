@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import products from "../data/products";
 import { useCart } from "../context/CartContext.jsx";
+import { FaArrowLeft } from "react-icons/fa";
 
 function AiChatbot() {
   const { addToCart } = useCart();
@@ -416,6 +417,11 @@ function AiChatbot() {
 
   return (
     <section className="ai-chatbot-section">
+
+      <Link to="/" className="ai-back-home">
+        <FaArrowLeft />
+        Back to Home
+      </Link>
 
       <div className="ai-chatbot-container">
 

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+
 import {
   Link,
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
+import { FaMagic } from "react-icons/fa";
 
 import { useCart } from "../context/CartContext";
 
@@ -22,9 +25,40 @@ function Checkout() {
 
   const [loading, setLoading] = useState(false);
 
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
+
+  const subtotal = Number(cartTotal) || 0;
+  const discountedTotal = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+
+  const coupons = {
+    STYLE10: { type: "percent", value: 10, label: "10% OFF" },
+    WELCOME15: { type: "percent", value: 15, label: "15% OFF" },
+    STYLE500: { type: "flat", value: 500, label: "₹500 OFF" },
+  };
+
+  const applyCoupon = () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) { setDiscount(0); setCouponMessage("Enter a coupon code."); return; }
+    const coupon = coupons[code];
+    if (!coupon) { setDiscount(0); setCouponMessage("Invalid coupon code."); return; }
+    const calculatedDiscount = coupon.type === "percent"
+      ? Math.round((subtotal * coupon.value) / 100)
+      : Math.min(coupon.value, subtotal);
+    setDiscount(calculatedDiscount);
+    setCouponMessage(`Coupon ${code} applied — ${coupon.label}`);
+  };
+
+  const removeCoupon = () => {
+    setCouponCode("");
+    setDiscount(0);
+    setCouponMessage("");
+  };
+
   /* =====================================================
      LOGIN PROTECTION
-     ===================================================== */
+  ===================================================== */
 
   useEffect(() => {
     const loggedIn =
@@ -35,49 +69,69 @@ function Checkout() {
     if (!loggedIn) {
       navigate("/login", {
         state: {
-          from: "/checkout",
+          from:
+            location.pathname,
         },
       });
     }
-  }, [navigate]);
+  }, [
+    navigate,
+    location.pathname,
+  ]);
 
   /* =====================================================
      LOAD USER DETAILS
-     ===================================================== */
+  ===================================================== */
 
   useEffect(() => {
-    const savedUser = localStorage.getItem(
-      "styleai-user"
-    );
+    const savedUser =
+      localStorage.getItem(
+        "styleai-user"
+      );
 
     if (savedUser) {
-      const user = JSON.parse(savedUser);
+      try {
+        const user =
+          JSON.parse(savedUser);
 
-      setCustomer((previousCustomer) => ({
-        ...previousCustomer,
-        name: user.name || "",
-        email: user.email || "",
-      }));
+        setCustomer((previousCustomer) => ({
+          ...previousCustomer,
+
+          name:
+            user.name || "",
+
+          email:
+            user.email || "",
+        }));
+      } catch (error) {
+        console.error(
+          "Unable to load user details:",
+          error
+        );
+      }
     }
   }, []);
 
   /* =====================================================
      INPUT CHANGE
-     ===================================================== */
+  ===================================================== */
 
   const handleChange = (e) => {
     setCustomer({
       ...customer,
-      [e.target.name]: e.target.value,
+
+      [e.target.name]:
+        e.target.value,
     });
   };
 
   /* =====================================================
      RAZORPAY SCRIPT
-     ===================================================== */
+  ===================================================== */
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
+
       if (window.Razorpay) {
         resolve(true);
         return;
@@ -89,19 +143,24 @@ function Checkout() {
       script.src =
         "https://checkout.razorpay.com/v1/checkout.js";
 
-      script.onload = () => resolve(true);
+      script.onload = () =>
+        resolve(true);
 
-      script.onerror = () => resolve(false);
+      script.onerror = () =>
+        resolve(false);
 
-      document.body.appendChild(script);
+      document.body.appendChild(
+        script
+      );
     });
   };
 
   /* =====================================================
      PAYMENT
-     ===================================================== */
+  ===================================================== */
 
   const handlePayment = async () => {
+
     if (
       !customer.name ||
       !customer.email ||
@@ -111,11 +170,13 @@ function Checkout() {
       alert(
         "Please fill all shipping details."
       );
+
       return;
     }
 
     if (cartItems.length === 0) {
       alert("Your cart is empty.");
+
       return;
     }
 
@@ -127,7 +188,8 @@ function Checkout() {
     if (!loggedIn) {
       navigate("/login", {
         state: {
-          from: "/checkout",
+          from:
+            location.pathname,
         },
       });
 
@@ -135,6 +197,7 @@ function Checkout() {
     }
 
     try {
+
       setLoading(true);
 
       /* LOAD RAZORPAY */
@@ -143,11 +206,13 @@ function Checkout() {
         await loadRazorpay();
 
       if (!razorpayLoaded) {
+
         alert(
           "Razorpay failed to load."
         );
 
         setLoading(false);
+
         return;
       }
 
@@ -165,7 +230,28 @@ function Checkout() {
             },
 
             body: JSON.stringify({
-              amount: cartTotal,
+              amount: discountedTotal,
+              subtotal,
+              discount,
+              couponCode: couponCode.trim().toUpperCase() || null,
+              customer,
+              items: cartItems.map((item) => ({
+                id: item.id,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                quantity: item.quantity,
+                selectedColor: item.selectedColor,
+                selectedSize: item.selectedSize,
+                customization: item.customization
+                  ? {
+                      productType: item.customization.productType || "T-Shirt",
+                      pattern: item.customization.pattern || "plain",
+                      text: item.customization.text || "",
+                      textColor: item.customization.textColor || "",
+                    }
+                  : null,
+              })),
             }),
           }
         );
@@ -174,25 +260,31 @@ function Checkout() {
         await orderResponse.json();
 
       if (!orderData.success) {
+
         alert(
           "Unable to create payment order."
         );
 
         setLoading(false);
+
         return;
       }
 
       /* RAZORPAY OPTIONS */
 
       const options = {
-        key: "rzp_test_TSNJrkr76zwuFl",
+
+        key:
+          "rzp_test_TSNJrkr76zwuFl",
 
         amount:
           orderData.order.amount,
 
-        currency: "INR",
+        currency:
+          "INR",
 
-        name: "StyleAI",
+        name:
+          "StyleAI",
 
         description:
           "StyleAI Fashion Purchase",
@@ -201,122 +293,216 @@ function Checkout() {
           orderData.order.id,
 
         prefill: {
-          name: customer.name,
-          email: customer.email,
-          contact: customer.phone,
+
+          name:
+            customer.name,
+
+          email:
+            customer.email,
+
+          contact:
+            customer.phone,
         },
 
         notes: {
-          address: customer.address,
+          address:
+            customer.address,
         },
 
         theme: {
-          color: "#9b5cff",
+          color:
+            "#8b5cf6",
         },
 
-        handler: async function (
-          response
-        ) {
-          try {
-            const verifyResponse =
-              await fetch(
-                "http://localhost:5000/verify-payment",
-                {
-                  method: "POST",
+        handler:
+          async function (response) {
 
-                  headers: {
-                    "Content-Type":
-                      "application/json",
+            try {
+
+              const verifyResponse =
+                await fetch(
+                  "http://localhost:5000/verify-payment",
+                  {
+                    method: "POST",
+
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
+
+                    body:
+                      JSON.stringify(
+                        response
+                      ),
+                  }
+                );
+
+              const verifyData =
+                await verifyResponse.json();
+
+              if (verifyData.success) {
+
+                /* =========================
+                   SAVE ORDER
+                ========================= */
+
+                const newOrder = {
+
+                  id:
+                    `STYLEAI-${Date.now()}`,
+
+                  date:
+                    new Date().toLocaleDateString(
+                      "en-IN",
+                      {
+                        day:
+                          "2-digit",
+
+                        month:
+                          "short",
+
+                        year:
+                          "numeric",
+                      }
+                    ),
+
+                  paymentId:
+                    verifyData.transactionId,
+
+                  subtotal,
+                  discount,
+                  couponCode:
+                    couponCode.trim().toUpperCase() || null,
+                  total:
+                    discountedTotal,
+
+                  customer: {
+                    name:
+                      customer.name,
+
+                    email:
+                      customer.email,
+
+                    phone:
+                      customer.phone,
+
+                    address:
+                      customer.address,
                   },
 
-                  body: JSON.stringify(
-                    response
-                  ),
-                }
-              );
+                  items:
+                    cartItems.map(
+                      (item) => ({
+                        id:
+                          item.id,
 
-            const verifyData =
-              await verifyResponse.json();
+                        name:
+                          item.name,
 
-            if (verifyData.success) {
-  const newOrder = {
-    id: `STYLEAI-${Date.now()}`,
+                        image:
+                          item.image,
 
-    date: new Date().toLocaleDateString(
-      "en-IN",
-      {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }
-    ),
+                        price:
+                          item.price,
 
-    paymentId:
-      verifyData.transactionId,
+                        quantity:
+                          item.quantity,
 
-    total: cartTotal,
+                        selectedColor:
+                          item.selectedColor,
 
-    customer: {
-      name: customer.name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address,
-    },
+                        selectedSize:
+                          item.selectedSize,
 
-    items: cartItems.map((item) => ({
-      id: item.id,
-      name: item.name,
-      image: item.image,
-      price: item.price,
-      quantity: item.quantity,
-      selectedColor:
-        item.selectedColor,
-      selectedSize:
-        item.selectedSize,
-    })),
-  };
+                        customization:
+                          item.customization
+                            ? {
+                                productType:
+                                  item.customization
+                                    .productType ||
+                                  "T-Shirt",
 
-  const savedOrders =
-    localStorage.getItem(
-      "styleai-orders"
-    );
+                                pattern:
+                                  item.customization
+                                    .pattern ||
+                                  "plain",
 
-  const existingOrders = savedOrders
-    ? JSON.parse(savedOrders)
-    : [];
+                                text:
+                                  item.customization
+                                    .text ||
+                                  "",
 
-  existingOrders.push(newOrder);
+                                textColor:
+                                  item.customization
+                                    .textColor ||
+                                  "",
+                              }
+                            : null,
+                      })
+                    ),
+                };
 
-  localStorage.setItem(
-    "styleai-orders",
-    JSON.stringify(existingOrders)
-  );
+                /* =========================
+                   SAVE TO LOCAL STORAGE
+                ========================= */
 
-  alert(
-    `Payment Successful!\n\nTransaction ID: ${verifyData.transactionId}`
-  );
+                const savedOrders =
+                  localStorage.getItem(
+                    "styleai-orders"
+                  );
 
-  navigate("/order");
-} else {
+                const existingOrders =
+                  savedOrders
+                    ? JSON.parse(
+                        savedOrders
+                      )
+                    : [];
+
+                existingOrders.push(
+                  newOrder
+                );
+
+                localStorage.setItem(
+                  "styleai-orders",
+                  JSON.stringify(
+                    existingOrders
+                  )
+                );
+
+                alert(
+                  `Payment Successful!\n\nTransaction ID: ${verifyData.transactionId}`
+                );
+
+                navigate("/orders");
+
+              } else {
+
+                alert(
+                  "Payment verification failed."
+                );
+              }
+
+            } catch (error) {
+
+              console.error(error);
+
               alert(
-                "Payment verification failed."
+                "Unable to verify payment."
               );
-            }
-          } catch (error) {
-            console.error(error);
 
-            alert(
-              "Unable to verify payment."
-            );
-          } finally {
-            setLoading(false);
-          }
-        },
+            } finally {
+
+              setLoading(false);
+            }
+          },
 
         modal: {
-          ondismiss: function () {
-            setLoading(false);
-          },
+
+          ondismiss:
+            function () {
+              setLoading(false);
+            },
+
         },
       };
 
@@ -330,6 +516,7 @@ function Checkout() {
       razorpay.on(
         "payment.failed",
         function (response) {
+
           console.error(
             response.error
           );
@@ -345,6 +532,7 @@ function Checkout() {
       razorpay.open();
 
     } catch (error) {
+
       console.error(error);
 
       alert(
@@ -356,8 +544,54 @@ function Checkout() {
   };
 
   /* =====================================================
+     TEXT COLOUR NAME
+  ===================================================== */
+
+  const getTextColorName = (
+    value
+  ) => {
+
+    const colors = {
+      "#ffffff":
+        "White",
+
+      "#111111":
+        "Black",
+
+      "#d4a72c":
+        "Gold",
+
+      "#e96b9a":
+        "Pink",
+    };
+
+    return (
+      colors[value] ||
+      value ||
+      "Not selected"
+    );
+  };
+
+  /* =====================================================
+     PATTERN NAME
+  ===================================================== */
+
+  const getPatternName = (
+    value
+  ) => {
+
+    if (
+      value === "stripes"
+    ) {
+      return "Stripes";
+    }
+
+    return "Plain";
+  };
+
+  /* =====================================================
      PAGE
-     ===================================================== */
+  ===================================================== */
 
   return (
     <div className="checkout-page">
@@ -379,6 +613,10 @@ function Checkout() {
           Checkout
         </h1>
 
+        <span className="checkout-subtitle">
+          Complete your order securely
+        </span>
+
       </div>
 
       <div className="checkout-container">
@@ -390,6 +628,11 @@ function Checkout() {
           <h2>
             Shipping Details
           </h2>
+
+          <p className="checkout-form-info">
+            Enter your delivery information
+            to complete your purchase.
+          </p>
 
           <input
             type="text"
@@ -432,54 +675,174 @@ function Checkout() {
             Order Summary
           </h2>
 
-          {cartItems.map((item) => (
+          {cartItems.map((item) => {
 
-            <div
-              className="checkout-item"
-              key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
-            >
+            const isCustomized =
+              Boolean(
+                item.customization
+              );
 
-              <img
-                src={item.image}
-                alt={item.name}
-              />
+            return (
 
-              <div>
+              <div
+                className="checkout-item"
+                key={`${item.id}-${item.selectedColor}-${item.selectedSize}-${item.customization?.text || ""}`}
+              >
 
-                <h3>
-                  {item.name}
-                </h3>
+                <div className="checkout-item-image">
 
-                <p>
-                  {item.selectedColor} /{" "}
-                  {item.selectedSize}
-                </p>
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                  />
 
-                <p>
-                  Qty: {item.quantity}
-                </p>
+                  {isCustomized && (
+                    <span className="checkout-custom-badge">
+                      <FaMagic />
+                      Custom
+                    </span>
+                  )}
+
+                </div>
+
+                <div className="checkout-item-info">
+
+                  <h3>
+                    {item.name}
+                  </h3>
+
+                  <p>
+                    Colour:{" "}
+                    {item.selectedColor ||
+                      "Default"}
+                  </p>
+
+                  <p>
+                    Size:{" "}
+                    {item.selectedSize ||
+                      "Standard"}
+                  </p>
+
+                  <p>
+                    Qty:{" "}
+                    {item.quantity}
+                  </p>
+
+                  {isCustomized && (
+
+                    <div className="checkout-customization">
+
+                      <div className="checkout-custom-title">
+                        <FaMagic />
+                        3D Customization
+                      </div>
+
+                      <p>
+                        Pattern:{" "}
+                        <strong>
+                          {getPatternName(
+                            item.customization
+                              .pattern
+                          )}
+                        </strong>
+                      </p>
+
+                      {item.customization
+                        .text && (
+
+                        <p>
+                          Text:{" "}
+                          <strong>
+                            "{item.customization.text}"
+                          </strong>
+                        </p>
+                      )}
+
+                      {item.customization
+                        .textColor && (
+
+                        <p>
+                          Text Colour:{" "}
+                          <strong>
+                            {getTextColorName(
+                              item.customization
+                                .textColor
+                            )}
+                          </strong>
+                        </p>
+                      )}
+
+                    </div>
+
+                  )}
+
+                </div>
+
+                <strong className="checkout-item-price">
+                  ₹
+                  {item.price *
+                    item.quantity}
+                </strong>
 
               </div>
 
-              <strong>
-                ₹
-                {item.price *
-                  item.quantity}
-              </strong>
+            );
+          })}
 
+          <div className="checkout-coupon">
+
+            <div className="checkout-coupon-title">
+              <span>Have a coupon?</span>
+
+              {discount > 0 && (
+                <button
+                  type="button"
+                  className="checkout-coupon-remove"
+                  onClick={removeCoupon}
+                >
+                  Remove
+                </button>
+              )}
             </div>
 
-          ))}
+            <div className="checkout-coupon-row">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="Enter coupon code"
+                disabled={discount > 0}
+              />
 
-          <div className="checkout-total">
+              <button
+                type="button"
+                onClick={applyCoupon}
+                disabled={discount > 0}
+              >
+                Apply
+              </button>
+            </div>
 
-            <span>
-              Total
-            </span>
+            {couponMessage && (
+              <p className={discount > 0 ? "checkout-coupon-success" : "checkout-coupon-error"}>
+                {couponMessage}
+              </p>
+            )}
 
-            <strong>
-              ₹{cartTotal}
-            </strong>
+            <div className="checkout-price-row">
+              <span>Subtotal</span>
+              <strong>₹{subtotal}</strong>
+            </div>
+
+            <div className="checkout-price-row">
+              <span>Discount</span>
+              <strong>{discount > 0 ? `- ₹${discount}` : "₹0"}</strong>
+            </div>
+
+            <div className="checkout-total">
+              <span>Total</span>
+              <strong>₹{discountedTotal}</strong>
+            </div>
 
           </div>
 
@@ -490,8 +853,13 @@ function Checkout() {
           >
             {loading
               ? "Opening Payment..."
-              : `Pay ₹${cartTotal}`}
+              : `Pay ₹${discountedTotal}`}
           </button>
+
+          <p className="secure-payment-note">
+            🔒 Secure payment powered by
+            Razorpay
+          </p>
 
         </div>
 

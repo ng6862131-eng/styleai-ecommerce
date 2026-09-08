@@ -3,6 +3,9 @@ import {
   FaHeart,
   FaShoppingBag,
   FaArrowRight,
+  FaTshirt,
+  FaShoePrints,
+  FaShoppingBag as FaBag,
 } from "react-icons/fa";
 
 import { Link } from "react-router-dom";
@@ -20,6 +23,21 @@ function ProductCard({ product }) {
   } = useWishlist();
 
   const [added, setAdded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  /* ================= CATEGORY ICON ================= */
+
+  const getCategoryIcon = () => {
+    if (product.category === "Shoes") {
+      return <FaShoePrints />;
+    }
+
+    if (product.category === "Accessories") {
+      return <FaBag />;
+    }
+
+    return <FaTshirt />;
+  };
 
   /* ================= ADD TO CART ================= */
 
@@ -46,7 +64,10 @@ function ProductCard({ product }) {
 
   /* ================= WISHLIST ================= */
 
-  const handleWishlist = () => {
+  const handleWishlist = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     toggleWishlist(product);
   };
 
@@ -63,22 +84,51 @@ function ProductCard({ product }) {
           to={`/product/${product.id}`}
           className="product-image-link"
         >
-          <img
-            src={product.image}
-            alt={product.name}
-            className="product-image"
-          />
+
+          {imageError ? (
+
+            <div className="product-image-fallback">
+
+              <div className="product-fallback-icon">
+                {getCategoryIcon()}
+              </div>
+
+              <span>
+                {product.category}
+              </span>
+
+              <small>
+                Image unavailable
+              </small>
+
+            </div>
+
+          ) : (
+
+            <img
+              src={product.image}
+              alt={product.name}
+              className="product-image"
+              loading="lazy"
+              onError={() =>
+                setImageError(true)
+              }
+            />
+
+          )}
+
         </Link>
 
-        {/* CATEGORY */}
+        {/* ================= CATEGORY ================= */}
 
         <span className="product-badge">
           {product.category}
         </span>
 
-        {/* WISHLIST */}
+        {/* ================= WISHLIST ================= */}
 
         <button
+          type="button"
           className={`wishlist-btn ${
             liked ? "liked" : ""
           }`}
@@ -116,7 +166,7 @@ function ProductCard({ product }) {
           </h3>
         </Link>
 
-        {/* RATING */}
+        {/* ================= RATING ================= */}
 
         <div className="product-rating">
 
@@ -134,7 +184,7 @@ function ProductCard({ product }) {
 
         </div>
 
-        {/* PRICE + CART */}
+        {/* ================= PRICE + CART ================= */}
 
         <div className="product-bottom">
 
@@ -151,11 +201,17 @@ function ProductCard({ product }) {
           </div>
 
           <button
+            type="button"
             className={`add-cart-btn ${
               added ? "added" : ""
             }`}
             onClick={handleAddToCart}
             title={
+              added
+                ? "Added to cart"
+                : "Add to cart"
+            }
+            aria-label={
               added
                 ? "Added to cart"
                 : "Add to cart"
@@ -170,13 +226,16 @@ function ProductCard({ product }) {
 
         </div>
 
-        {/* VIEW DETAILS */}
+        {/* ================= VIEW DETAILS ================= */}
 
         <Link
           to={`/product/${product.id}`}
           className="view-product-btn"
         >
-          View Details
+          <span>
+            View Details
+          </span>
+
           <FaArrowRight />
         </Link>
 
