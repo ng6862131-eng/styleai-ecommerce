@@ -3,6 +3,7 @@ import {
   FaShoppingBag,
   FaUser,
   FaHeart,
+  FaStore,
 } from "react-icons/fa";
 
 import {
@@ -97,7 +98,7 @@ function Navbar() {
           <FaHeart />
         </Link>
 
-        {/* ACCOUNT */}
+        {/* CUSTOMER ACCOUNT */}
 
         <Link
           to={
@@ -113,6 +114,17 @@ function Navbar() {
           }
         >
           <FaUser />
+        </Link>
+
+        {/* SELLER ACCOUNT */}
+
+        <Link
+          to="/seller/login"
+          className="seller-nav-btn"
+          title="Seller Account"
+        >
+          <FaStore />
+          <span>Seller</span>
         </Link>
 
         {/* CART */}

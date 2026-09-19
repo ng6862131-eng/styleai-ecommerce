@@ -17,6 +17,10 @@ import Wishlist from "./pages/Wishlist";
 import Customize3D from "./pages/Customize3D";
 import AiChatbot from "./components/AiChatbot";
 import About from "./pages/About";
+import SellerLogin from "./pages/SellerLogin";
+import SellerDashboard from "./pages/SellerDashboard";
+import SellerOrderDetails from "./pages/SellerOrderDetails";
+import SellerOrders from "./pages/SellerOrders";
 
 function App() {
   return (
@@ -98,6 +102,28 @@ function App() {
         path="/about"
         element={<About />}
         />
+
+        {/* ================= SELLER LOGIN ================= */}
+        <Route
+          path="/seller/login"
+          element={<SellerLogin />}
+        />
+
+        {/* ================= SELLER DASHBOARD ================= */}
+        <Route
+          path="/seller/dashboard"
+          element={<SellerDashboard />}
+        />
+        {/* ================= SELLER ORDER DETAILS ================= */}
+        <Route
+          path="/seller/orders/:orderId"
+          element={<SellerOrderDetails />}
+        />
+        {/* ================= SELLER ORDERS ================= */}
+          <Route
+            path="/seller/orders"
+            element={<SellerOrders />}
+          />
 
       </Routes>
     </BrowserRouter>
