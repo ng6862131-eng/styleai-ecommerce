@@ -752,6 +752,77 @@ StyleAI`,
 }
 
 /* =========================================================
+   CONTACT FORM
+========================================================= */
+
+app.post("/contact", async (req, res) => {
+  try {
+    const name = cleanString(req.body?.name, 100);
+    const email = cleanString(req.body?.email, 150).toLowerCase();
+    const topic = cleanString(req.body?.topic, 80);
+    const orderId = cleanString(req.body?.orderId, 100);
+    const message = cleanString(req.body?.message, 3000);
+    const allowedTopics = new Set([
+      "General question",
+      "Order support",
+      "Account help",
+      "Seller support",
+      "Website feedback",
+    ]);
+
+    if (
+      !name ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      !allowedTopics.has(topic) ||
+      !message
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter your name, a valid email address, a topic and a message.",
+      });
+    }
+
+    const contactRecipient = cleanString(
+      process.env.CONTACT_EMAIL || process.env.EMAIL_USER,
+      150
+    );
+
+    if (!mailer || !contactRecipient) {
+      return res.status(503).json({
+        success: false,
+        message: "Contact messages are not available right now because email is not configured.",
+      });
+    }
+
+    await mailer.sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: contactRecipient,
+      replyTo: email,
+      subject: "[StyleAI Contact] " + topic,
+      text: [
+        "Name: " + name,
+        "Email: " + email,
+        "Topic: " + topic,
+        "Order number: " + (orderId || "Not provided"),
+        "",
+        "Message:",
+        message,
+      ].join("\n"),
+    });
+
+    return res.json({
+      success: true,
+      message: "Your message has been sent.",
+    });
+  } catch (error) {
+    console.error("CONTACT MESSAGE ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "We could not send your message. Please try again later.",
+    });
+  }
+});
+/* =========================================================
    HEALTH / HOME
 ========================================================= */
 

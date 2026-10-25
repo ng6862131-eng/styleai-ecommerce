@@ -19,6 +19,14 @@ function SellerOrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
+  const [loadedOrderId, setLoadedOrderId] = useState("");
+
+  const retryOrder = () => {
+    setError("");
+    setLoading(true);
+    setRetryCount((count) => count + 1);
+  };
 
   useEffect(() => {
     const sellerLoggedIn =
@@ -29,43 +37,45 @@ function SellerOrderDetails() {
       return;
     }
 
-    loadOrder();
-  }, [orderId, navigate]);
+    let active = true;
+    const decodedOrderId = decodeURIComponent(orderId || "");
+    const request = decodedOrderId
+      ? fetch(
+          `http://localhost:5000/seller/orders/${encodeURIComponent(decodedOrderId)}`
+        )
+      : Promise.reject(new Error("Order ID is missing."));
 
-  const loadOrder = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    request
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Unable to load order.");
+        }
+        return data.order;
+      })
+      .then((nextOrder) => {
+        if (active) {
+          setError("");
+          setOrder(nextOrder);
+          setLoadedOrderId(orderId || "");
+        }
+      })
+      .catch((err) => {
+        console.error("Seller order details error:", err);
+        if (active) {
+          setError(err.message || "Unable to connect to backend.");
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
 
-      const decodedOrderId = decodeURIComponent(orderId || "");
-
-      if (!decodedOrderId) {
-        throw new Error("Order ID is missing.");
-      }
-
-      const response = await fetch(
-        `http://localhost:5000/seller/orders/${encodeURIComponent(decodedOrderId)}`
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message || "Unable to load order."
-        );
-      }
-
-      setOrder(data.order);
-    } catch (err) {
-      console.error("Seller order details error:", err);
-      setError(
-        err.message || "Unable to connect to backend."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    return () => {
+      active = false;
+    };
+  }, [orderId, navigate, retryCount]);
   const logout = () => {
     localStorage.removeItem("styleai-seller");
     navigate("/seller/login");
@@ -79,7 +89,7 @@ function SellerOrderDetails() {
     navigate("/");
   };
 
-  if (loading) {
+  if (loading || (!error && loadedOrderId !== (orderId || ""))) {
     return (
       <div className="seller-order-details-page">
         <div className="seller-order-status-card">
@@ -101,7 +111,7 @@ function SellerOrderDetails() {
           <div className="seller-status-actions">
             <button
               className="seller-refresh-btn"
-              onClick={loadOrder}
+              onClick={retryOrder}
             >
               Try Again
             </button>

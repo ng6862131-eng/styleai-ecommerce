@@ -18,6 +18,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Customize3D = lazy(() => import("./pages/Customize3D"));
 const AiChatbot = lazy(() => import("./components/AiChatbot"));
 const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
 const SellerLogin = lazy(() => import("./pages/SellerLogin"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const SellerOrderDetails = lazy(() => import("./pages/SellerOrderDetails"));
@@ -104,6 +105,8 @@ function App() {
         path="/about"
         element={<About />}
         />
+
+        <Route path="/contact" element={<Contact />} />
 
         {/* ================= SELLER LOGIN ================= */}
         <Route

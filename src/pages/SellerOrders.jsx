@@ -7,6 +7,13 @@ function SellerOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
+
+  const retryOrders = () => {
+    setError("");
+    setLoading(true);
+    setRetryCount((count) => count + 1);
+  };
 
   useEffect(() => {
     const sellerLoggedIn =
@@ -17,38 +24,39 @@ function SellerOrders() {
       return;
     }
 
-    loadOrders();
-  }, [navigate]);
-
-  const loadOrders = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch(
-        "http://localhost:5000/seller/orders"
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message || "Unable to load orders."
+    let active = true;
+    const loadOrders = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/seller/orders"
         );
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Unable to load orders.");
+        }
+
+        if (active) {
+          setError("");
+          setOrders(data.orders || []);
+        }
+      } catch (err) {
+        console.error(err);
+        if (active) {
+          setError(err.message || "Unable to connect to the backend.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
+    };
 
-      setOrders(data.orders || []);
-    } catch (err) {
-      console.error(err);
-      setError(
-        err.message ||
-          "Unable to connect to the backend."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    void loadOrders();
+    return () => {
+      active = false;
+    };
+  }, [navigate, retryCount]);
   const logout = () => {
     localStorage.removeItem("styleai-seller");
     navigate("/seller/login");
@@ -71,7 +79,7 @@ function SellerOrders() {
           <h2>Unable to Load Orders</h2>
           <p>{error}</p>
 
-          <button onClick={loadOrders}>
+          <button onClick={retryOrders}>
             Try Again
           </button>
         </div>
@@ -131,7 +139,7 @@ function SellerOrders() {
 
           <button
             className="seller-refresh-btn"
-            onClick={loadOrders}
+            onClick={retryOrders}
           >
             Refresh
           </button>

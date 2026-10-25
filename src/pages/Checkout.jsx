@@ -16,13 +16,31 @@ function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [customer, setCustomer] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-  });
+  const [customer, setCustomer] = useState(() => {
+    const emptyCustomer = {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+    };
+    const savedUser = localStorage.getItem("styleai-user");
 
+    if (!savedUser) {
+      return emptyCustomer;
+    }
+
+    try {
+      const user = JSON.parse(savedUser);
+      return {
+        ...emptyCustomer,
+        name: user.name || "",
+        email: user.email || "",
+      };
+    } catch (error) {
+      console.error("Unable to load user details:", error);
+      return emptyCustomer;
+    }
+  });
   const [loading, setLoading] = useState(false);
 
   const [couponCode, setCouponCode] = useState("");
@@ -79,38 +97,7 @@ function Checkout() {
     location.pathname,
   ]);
 
-  /* =====================================================
-     LOAD USER DETAILS
-  ===================================================== */
 
-  useEffect(() => {
-    const savedUser =
-      localStorage.getItem(
-        "styleai-user"
-      );
-
-    if (savedUser) {
-      try {
-        const user =
-          JSON.parse(savedUser);
-
-        setCustomer((previousCustomer) => ({
-          ...previousCustomer,
-
-          name:
-            user.name || "",
-
-          email:
-            user.email || "",
-        }));
-      } catch (error) {
-        console.error(
-          "Unable to load user details:",
-          error
-        );
-      }
-    }
-  }, []);
 
   /* =====================================================
      INPUT CHANGE

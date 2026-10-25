@@ -12,6 +12,22 @@ import {
   FaTimes,
 } from "react-icons/fa";
 
+const PasswordRule = ({ valid, children }) => (
+    <div
+      className={
+        valid
+          ? "password-rule valid"
+          : "password-rule"
+      }
+    >
+      <span className="password-rule-icon">
+        {valid ? <FaCheck /> : <FaTimes />}
+      </span>
+
+      <span>{children}</span>
+    </div>
+);
+
 function Register() {
   const navigate = useNavigate();
 
@@ -125,24 +141,6 @@ function Register() {
 
     navigate("/login");
   };
-
-  /* ================= RULE COMPONENT ================= */
-
-  const PasswordRule = ({ valid, children }) => (
-    <div
-      className={
-        valid
-          ? "password-rule valid"
-          : "password-rule"
-      }
-    >
-      <span className="password-rule-icon">
-        {valid ? <FaCheck /> : <FaTimes />}
-      </span>
-
-      <span>{children}</span>
-    </div>
-  );
 
   return (
     <div className="login-page">

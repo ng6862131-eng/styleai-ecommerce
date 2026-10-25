@@ -17,6 +17,13 @@ function SellerDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
+
+  const retryDashboard = () => {
+    setError("");
+    setLoading(true);
+    setRetryCount((count) => count + 1);
+  };
 
   useEffect(() => {
     const sellerLoggedIn =
@@ -27,38 +34,39 @@ function SellerDashboard() {
       return;
     }
 
-    loadDashboard();
-  }, [navigate]);
-
-  const loadDashboard = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch(
-        "http://localhost:5000/seller/dashboard"
-      );
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(
-          data.message || "Unable to load dashboard."
+    let active = true;
+    const loadDashboard = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/seller/dashboard"
         );
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Unable to load dashboard.");
+        }
+
+        if (active) {
+          setError("");
+          setDashboard(data);
+        }
+      } catch (err) {
+        console.error("Seller dashboard error:", err);
+        if (active) {
+          setError("Unable to connect to the StyleAI backend.");
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
       }
+    };
 
-      setDashboard(data);
-    } catch (err) {
-      console.error("Seller dashboard error:", err);
-
-      setError(
-        "Unable to connect to the StyleAI backend."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
+    void loadDashboard();
+    return () => {
+      active = false;
+    };
+  }, [navigate, retryCount]);
   const logout = () => {
     localStorage.removeItem("styleai-seller");
     navigate("/seller/login");
@@ -92,7 +100,7 @@ function SellerDashboard() {
 
           <button
             className="seller-refresh-btn"
-            onClick={loadDashboard}
+            onClick={retryDashboard}
           >
             Try Again
           </button>
@@ -187,7 +195,7 @@ function SellerDashboard() {
 
           <button
             className="seller-refresh-btn"
-            onClick={loadDashboard}
+            onClick={retryDashboard}
           >
             Refresh Data
           </button>

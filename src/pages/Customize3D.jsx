@@ -1,4 +1,5 @@
 import {
+  Suspense,
   useEffect,
   useMemo,
   useState,
@@ -87,25 +88,6 @@ function TshirtModel({
 
   }, [uploadedImage]);
 
-
-  /* =======================================================
-     IMAGE TRANSFORM
-  ======================================================= */
-
-  useEffect(() => {
-
-    if (!uploadedTexture) {
-      return;
-    }
-
-    uploadedTexture.needsUpdate = true;
-
-  }, [
-    uploadedTexture,
-    imagePosition,
-    imageScale,
-    imageRotation,
-  ]);
 
   const frontTextRef = useRef(null);
   const imageTextRef = useRef(null);
@@ -415,50 +397,66 @@ function TshirtModel({
           CUSTOM TEXT
       ================================================= */}
 
-      <Text
-        ref={frontTextRef}
-        position={[
-          0,
-          -0.18,
-          0.51,
-        ]}
-        fontSize={0.27}
-        color={textColor}
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={2}
-        outlineWidth={0.012}
-        outlineColor={
-          textColor === "#ffffff"
-            ? "#111111"
-            : "#ffffff"
-        }
-        visible={!uploadedTexture}
-      />
+      <Suspense fallback={null}>
+        <Text
+          ref={frontTextRef}
+          position={[
+            0,
+            -0.18,
+            0.51,
+          ]}
+          fontSize={0.27}
+          color={textColor}
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={2}
+          outlineWidth={0.012}
+          outlineColor={
+            textColor === "#ffffff"
+              ? "#111111"
+              : "#ffffff"
+          }
+          visible={!uploadedTexture}
+          onSync={() =>
+            onTextObjectReady?.(
+              frontTextRef.current,
+              imageTextRef.current,
+            )
+          }
+        />
+      </Suspense>
 
 
       {/* TEXT BELOW IMAGE */}
 
-      <Text
-        ref={imageTextRef}
-        position={[
-          0,
-          -0.82,
-          0.51,
-        ]}
-        fontSize={0.22}
-        color={textColor}
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={1.9}
-        outlineWidth={0.012}
-        outlineColor={
-          textColor === "#ffffff"
-            ? "#111111"
-            : "#ffffff"
-        }
-        visible={!!uploadedTexture}
-      />
+      <Suspense fallback={null}>
+        <Text
+          ref={imageTextRef}
+          position={[
+            0,
+            -0.82,
+            0.51,
+          ]}
+          fontSize={0.22}
+          color={textColor}
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={1.9}
+          outlineWidth={0.012}
+          outlineColor={
+            textColor === "#ffffff"
+              ? "#111111"
+              : "#ffffff"
+          }
+          visible={!!uploadedTexture}
+          onSync={() =>
+            onTextObjectReady?.(
+              frontTextRef.current,
+              imageTextRef.current,
+            )
+          }
+        />
+      </Suspense>
 
 
     </group>
@@ -798,12 +796,6 @@ function Customize3D() {
       Math.max(
         0.15,
         1.35 - imageHalfSize
-      );
-
-    const verticalLimit =
-      Math.max(
-        0.15,
-        1.15 - imageHalfSize
       );
 
     const next = {
@@ -1182,8 +1174,7 @@ function Customize3D() {
 
               enableRotate
 
-              enableZoom
-
+              enableZoom={false}
               enablePan={false}
 
               minDistance={3.5}
@@ -1207,7 +1198,7 @@ function Customize3D() {
             className="viewer-hint"
           >
             Drag to rotate •
-            Scroll to zoom
+            Use buttons to zoom
           </div>
 
 

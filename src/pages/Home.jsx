@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import AiChatbot from "../components/AiChatbot";
 
 function Home() {
@@ -622,6 +623,7 @@ function Home() {
         <AiChatbot />
 
       </main>
+      <Footer />
     </>
   );
 }

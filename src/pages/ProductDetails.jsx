@@ -1,7 +1,4 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 
 import {
   useParams,
@@ -114,23 +111,29 @@ function ProductDetails() {
     });
   };
 
-  const [selectedSize, setSelectedSize] =
-    useState(
-      product?.sizes?.[0] ||
-        "Standard"
-    );
+  const [sizeSelection, setSizeSelection] = useState({
+    productId: product?.id,
+    value: product?.sizes?.[0] || "Standard",
+  });
+  const selectedSize =
+    sizeSelection.productId === product?.id
+      ? sizeSelection.value
+      : product?.sizes?.[0] || "Standard";
+  const setSelectedSize = (size) => {
+    setSizeSelection({ productId: product?.id, value: size });
+  };
 
-  const [quantity, setQuantity] =
-    useState(1);
-
+  const [quantitySelection, setQuantitySelection] = useState({
+    productId: product?.id,
+    value: 1,
+  });
   const [liked, setLiked] =
     useState(false);
 
   const [added, setAdded] =
     useState(false);
 
-  const [imageError, setImageError] =
-    useState(false);
+  const [failedImage, setFailedImage] = useState("");
 
   const stock =
     product?.stock !== undefined &&
@@ -144,33 +147,32 @@ function ProductDetails() {
   const isOutOfStock =
     stock !== null &&
     stock <= 0;
+  const quantity =
+    quantitySelection.productId === product?.id
+      ? quantitySelection.value
+      : 1;
+  const maxQuantity = stock === null ? 10 : Math.max(1, stock);
+  const setQuantity = (update) => {
+    setQuantitySelection((current) => {
+      const currentQuantity =
+        current.productId === product?.id ? current.value : 1;
+      const nextQuantity =
+        typeof update === "function"
+          ? update(currentQuantity)
+          : update;
+
+      return {
+        productId: product?.id,
+        value: Math.min(Math.max(1, nextQuantity), maxQuantity),
+      };
+    });
+  };
 
   const currentImage =
-    getLocalColorImage(
-      product,
-      selectedColor
-    );
-
-  useEffect(() => {
-    setImageError(false);
-  }, [
-    selectedColor,
-    product?.id,
-  ]);
-
-  useEffect(() => {
-    if (
-      stock !== null &&
-      stock > 0
-    ) {
-      setQuantity((current) =>
-        Math.min(
-          current,
-          stock
-        )
-      );
-    }
-  }, [stock]);
+    getLocalColorImage(product, selectedColor);
+  const imageError = Boolean(
+    currentImage && failedImage === currentImage
+  );
 
   if (!product) {
     return (
@@ -342,7 +344,7 @@ function ProductDetails() {
                 src={currentImage}
                 alt={`${product.name} in ${selectedColor}`}
                 className="details-image"
-                onError={() => setImageError(true)}
+                onError={() => setFailedImage(currentImage)}
               />
             )}
 
@@ -475,7 +477,6 @@ function ProductDetails() {
                       setSelectedColor(
                         color
                       );
-                      setImageError(false);
                     }}
                   >
 
