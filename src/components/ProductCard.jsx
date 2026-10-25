@@ -5,6 +5,7 @@ import {
   FaArrowRight,
   FaTshirt,
   FaShoePrints,
+  FaCheck,
   FaShoppingBag as FaBag,
 } from "react-icons/fa";
 
@@ -14,6 +15,78 @@ import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 
+/* =========================================================
+   COLOUR VALUES
+========================================================= */
+
+const COLOR_MAP = {
+  black: "#111111",
+  white: "#ffffff",
+  blue: "#2563eb",
+  "dark blue": "#1e3a8a",
+  navy: "#1e3a8a",
+  "navy blue": "#1e3a8a",
+  "light blue": "#93c5fd",
+  red: "#dc2626",
+  green: "#16a34a",
+  olive: "#556b2f",
+  "olive green": "#556b2f",
+  beige: "#d8c3a5",
+  maroon: "#7f1d1d",
+  wine: "#6d1f3b",
+  grey: "#6b7280",
+  gray: "#6b7280",
+  brown: "#92400e",
+  yellow: "#eab308",
+  pink: "#ec4899",
+  purple: "#8b5cf6",
+  orange: "#f97316",
+  gold: "#d4af37",
+  silver: "#cbd5e1",
+  cream: "#f5efe1",
+};
+
+/* =========================================================
+   GET COLOUR DOT
+========================================================= */
+
+const getColorValue = (color) => {
+  return (
+    COLOR_MAP[
+      String(color || "")
+        .trim()
+        .toLowerCase()
+    ] || "#9b5cff"
+  );
+};
+
+/* =========================================================
+   GET LOCAL CLOTHING IMAGE
+========================================================= */
+
+const getLocalColorImage = (
+  product,
+  selectedColor
+) => {
+  const color =
+    String(selectedColor || "")
+      .trim()
+      .toLowerCase();
+
+  const variantImage = Object.entries(product?.colorImages || {}).find(
+    ([variantColor]) => variantColor.trim().toLowerCase() === color
+  )?.[1];
+
+  if (variantImage) {
+    return variantImage;
+  }
+  return product?.image || "";
+};
+
+/* =========================================================
+   COMPONENT
+========================================================= */
+
 function ProductCard({ product }) {
   const { addToCart } = useCart();
 
@@ -22,53 +95,84 @@ function ProductCard({ product }) {
     isInWishlist,
   } = useWishlist();
 
-  const [added, setAdded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [added, setAdded] =
+    useState(false);
 
-  // Selected product options
-  const [selectedColor, setSelectedColor] = useState(
-    product.colors?.[0] || "Default"
-  );
+  const [imageError, setImageError] =
+    useState(false);
 
-  const [selectedSize, setSelectedSize] = useState(
-    product.sizes?.[0] || "Standard"
-  );
+  const [selectedColor, setSelectedColor] =
+    useState(
+      product?.colors?.[0] ||
+        ""
+    );
 
-  /* ================= STOCK ================= */
+  const [selectedSize, setSelectedSize] =
+    useState(
+      product?.sizes?.[0] ||
+        "Standard"
+    );
+
+  /* STOCK */
 
   const stock =
-    product.stock !== undefined
-      ? Number(product.stock)
+    product?.stock !== undefined &&
+    product?.stock !== null
+      ? Math.max(
+          0,
+          Number(product.stock) || 0
+        )
       : null;
 
   const isOutOfStock =
-    stock !== null && stock <= 0;
+    stock !== null &&
+    stock <= 0;
 
   const isLowStock =
     stock !== null &&
     stock > 0 &&
     stock <= 5;
 
-  /* ================= CATEGORY ICON ================= */
+  /* IMAGE */
+
+  const currentImage =
+    getLocalColorImage(
+      product,
+      selectedColor
+    );
+
+  /* CATEGORY ICON */
 
   const getCategoryIcon = () => {
-    if (product.category === "Shoes") {
+    if (
+      product?.category === "Shoes"
+    ) {
       return <FaShoePrints />;
     }
 
-    if (product.category === "Accessories") {
+    if (
+      product?.category ===
+      "Accessories"
+    ) {
       return <FaBag />;
     }
 
     return <FaTshirt />;
   };
 
-  /* ================= ADD TO CART ================= */
+  /* COLOUR CHANGE */
+
+  const handleColorChange = (
+    color
+  ) => {
+    setSelectedColor(color);
+    setImageError(false);
+  };
+
+  /* ADD TO CART */
 
   const handleAddToCart = () => {
-    if (isOutOfStock) {
-      return;
-    }
+    if (isOutOfStock) return;
 
     addToCart(
       product,
@@ -84,48 +188,24 @@ function ProductCard({ product }) {
     }, 1500);
   };
 
-  /* ================= WISHLIST ================= */
+  /* WISHLIST */
 
-  const handleWishlist = (event) => {
+  const handleWishlist = (
+    event
+  ) => {
     event.preventDefault();
     event.stopPropagation();
 
     toggleWishlist(product);
   };
 
-  const liked = isInWishlist(product.id);
-
-  /* ================= COLOR DOT ================= */
-
-  const getColorValue = (color) => {
-    const colorName = String(color).toLowerCase();
-
-    const colorMap = {
-      black: "#111111",
-      white: "#ffffff",
-      blue: "#2563eb",
-      red: "#dc2626",
-      green: "#16a34a",
-      beige: "#d8c3a5",
-      yellow: "#eab308",
-      pink: "#ec4899",
-      purple: "#8b5cf6",
-      grey: "#6b7280",
-      gray: "#6b7280",
-      brown: "#92400e",
-      orange: "#f97316",
-      navy: "#1e3a8a",
-    };
-
-    return (
-      colorMap[colorName] || color
-    );
-  };
+  const liked =
+    isInWishlist(product.id);
 
   return (
     <div className="product-card">
 
-      {/* ================= IMAGE ================= */}
+      {/* IMAGE */}
 
       <div className="product-image-container">
 
@@ -134,7 +214,8 @@ function ProductCard({ product }) {
           className="product-image-link"
         >
 
-          {imageError ? (
+          {imageError ||
+          !currentImage ? (
 
             <div className="product-image-fallback">
 
@@ -143,11 +224,12 @@ function ProductCard({ product }) {
               </div>
 
               <span>
-                {product.category}
+                {product?.category ||
+                  "Product"}
               </span>
 
               <small>
-                Image unavailable
+                Product image unavailable
               </small>
 
             </div>
@@ -155,8 +237,9 @@ function ProductCard({ product }) {
           ) : (
 
             <img
-              src={product.image}
-              alt={product.name}
+              key={`${product.id}-${selectedColor}`}
+              src={currentImage}
+              alt={`${product.name} - ${selectedColor}`}
               className="product-image"
               loading="lazy"
               onError={() =>
@@ -171,7 +254,7 @@ function ProductCard({ product }) {
         {/* CATEGORY */}
 
         <span className="product-badge">
-          {product.category}
+          {product?.category}
         </span>
 
         {/* WISHLIST */}
@@ -187,23 +270,18 @@ function ProductCard({ product }) {
               ? "Remove from wishlist"
               : "Add to wishlist"
           }
-          title={
-            liked
-              ? "Remove from wishlist"
-              : "Add to wishlist"
-          }
         >
           <FaHeart />
         </button>
 
       </div>
 
-      {/* ================= PRODUCT INFO ================= */}
+      {/* PRODUCT INFO */}
 
       <div className="product-info">
 
         <p className="product-category">
-          {product.category}
+          {product?.category}
         </p>
 
         <Link
@@ -211,11 +289,11 @@ function ProductCard({ product }) {
           className="product-name-link"
         >
           <h3>
-            {product.name}
+            {product?.name}
           </h3>
         </Link>
 
-        {/* ================= RATING ================= */}
+        {/* RATING */}
 
         <div className="product-rating">
 
@@ -224,7 +302,7 @@ function ProductCard({ product }) {
           </span>
 
           <span className="rating-number">
-            {product.rating}
+            {product?.rating ?? 0}
           </span>
 
           <span className="rating-text">
@@ -233,9 +311,10 @@ function ProductCard({ product }) {
 
         </div>
 
-        {/* ================= STOCK ================= */}
+        {/* STOCK */}
 
         {stock !== null && (
+
           <div
             className={`product-stock ${
               isOutOfStock
@@ -251,102 +330,146 @@ function ProductCard({ product }) {
               ? `Only ${stock} left`
               : `${stock} in stock`}
           </div>
+
         )}
 
-        {/* ================= COLOR OPTIONS ================= */}
+        {/* COLOUR */}
 
-        {product.colors?.length > 0 && (
+        {product?.colors?.length >
+          0 && (
+
           <div className="product-color-section">
 
             <div className="product-color-title">
-              <span>Color</span>
+
+              <span>
+                Colour
+              </span>
 
               <strong>
                 {selectedColor}
               </strong>
+
             </div>
 
             <div className="product-color-options">
 
               {product.colors.map(
-                (color, index) => (
+                (
+                  color,
+                  index
+                ) => (
+
                   <button
                     key={`${color}-${index}`}
                     type="button"
                     className={`product-color-option ${
-                      selectedColor === color
+                      selectedColor ===
+                      color
                         ? "selected"
                         : ""
                     }`}
                     onClick={() =>
-                      setSelectedColor(color)
+                      handleColorChange(
+                        color
+                      )
                     }
-                    title={color}
+                    title={`Select ${color}`}
                     aria-label={`Select ${color}`}
                   >
+
                     <span
                       className="product-color-dot"
                       style={{
                         backgroundColor:
-                          getColorValue(color),
+                          getColorValue(
+                            color
+                          ),
                       }}
                     />
+
+                    <span className="product-color-name">
+                      {color}
+                    </span>
+
+                    {selectedColor ===
+                      color && (
+                      <FaCheck className="product-color-check" />
+                    )}
+
                   </button>
+
                 )
               )}
 
             </div>
 
           </div>
+
         )}
 
-        {/* ================= SIZE OPTIONS ================= */}
+        {/* SIZE */}
 
-        {product.sizes?.length > 0 && (
+        {product?.sizes?.length >
+          0 && (
+
           <div className="product-size-section">
 
             <div className="product-size-title">
-              <span>Size</span>
+
+              <span>
+                Size
+              </span>
 
               <strong>
                 {selectedSize}
               </strong>
+
             </div>
 
             <div className="product-size-options">
 
               {product.sizes.map(
-                (size, index) => (
+                (
+                  size,
+                  index
+                ) => (
+
                   <button
                     key={`${size}-${index}`}
                     type="button"
                     className={`product-size-option ${
-                      selectedSize === size
+                      selectedSize ===
+                      size
                         ? "selected"
                         : ""
                     }`}
                     onClick={() =>
-                      setSelectedSize(size)
+                      setSelectedSize(
+                        size
+                      )
                     }
                   >
                     {size}
                   </button>
+
                 )
               )}
 
             </div>
 
           </div>
+
         )}
 
-        {/* ================= PRICE + CART ================= */}
+        {/* PRICE */}
 
         <div className="product-bottom">
 
           <div className="product-price">
 
             <strong>
-              ₹{product.price}
+              ₹{product?.price ?? 0}
             </strong>
 
             <span>
@@ -364,21 +487,11 @@ function ProductCard({ product }) {
                 ? "disabled"
                 : ""
             }`}
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            title={
-              isOutOfStock
-                ? "Out of stock"
-                : added
-                ? "Added to cart"
-                : "Add to cart"
+            onClick={
+              handleAddToCart
             }
-            aria-label={
+            disabled={
               isOutOfStock
-                ? "Out of stock"
-                : added
-                ? "Added to cart"
-                : "Add to cart"
             }
           >
             {isOutOfStock ? (
@@ -392,7 +505,7 @@ function ProductCard({ product }) {
 
         </div>
 
-        {/* ================= VIEW DETAILS ================= */}
+        {/* DETAILS */}
 
         <Link
           to={`/product/${product.id}`}
@@ -406,7 +519,6 @@ function ProductCard({ product }) {
         </Link>
 
       </div>
-
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   FaBoxOpen,
   FaFileInvoice,
 } from "react-icons/fa";
+import { useEffect, useState } from "react";
 
 function SellerOrderDetails() {
   const { orderId } = useParams();
@@ -280,9 +281,11 @@ function SellerOrderDetails() {
                     <div className="seller-product-info">
                       <h3>{item.name || "Product"}</h3>
 
-                      <p>
-                        Color: {item.selectedColor || "-"}
-                      </p>
+                      {item.selectedColor && (
+                        <p>
+                          Color: {item.selectedColor}
+                        </p>
+                      )}
 
                       <p>
                         Size: {item.selectedSize || "-"}

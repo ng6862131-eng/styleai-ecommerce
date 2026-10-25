@@ -18,24 +18,28 @@ function Home() {
       description: "Sharp, relaxed and modern.",
       icon: "👔",
       className: "men",
+      image: "/products/oversized-tshirt-blue.jpeg",
     },
     {
       name: "Women",
       description: "Elegant looks for every mood.",
       icon: "👗",
       className: "women",
+      image: "/products/blazer-women-beige.png",
     },
     {
       name: "Shoes",
       description: "Finish every outfit perfectly.",
       icon: "👟",
       className: "shoes",
+      image: "/products/shoe-runner-black.jpg",
     },
     {
       name: "Accessories",
       description: "The details make the difference.",
       icon: "👜",
       className: "accessories",
+      image: "/products/jewelry-earrings-gold.jpg",
     },
   ];
 
@@ -62,16 +66,16 @@ function Home() {
             </div>
 
             <h1>
-              Discover the
+              Find your next
               <span>
-                style that is you.
+                favourite look.
               </span>
             </h1>
 
             <p>
-              Shop smarter with AI-powered fashion
-              recommendations built around your
-              occasion, personality and budget.
+              Explore clothing, shoes and accessories. Find products by
+              colour, occasion or budget, then create a custom T-shirt in
+              the 3D studio.
             </p>
 
             <div className="home-hero-buttons">
@@ -97,22 +101,22 @@ function Home() {
             <div className="home-trust-row">
 
               <div className="home-trust-item">
-                <strong>60+</strong>
-                <span>Curated styles</span>
+                <strong>4</strong>
+                <span>Collections</span>
               </div>
 
               <div className="home-trust-divider"></div>
 
               <div className="home-trust-item">
-                <strong>AI</strong>
-                <span>Personal stylist</span>
+                <strong>Style</strong>
+                <span>Product matches</span>
               </div>
 
               <div className="home-trust-divider"></div>
 
               <div className="home-trust-item">
-                <strong>4.8</strong>
-                <span>Average rating</span>
+                <strong>3D</strong>
+                <span>T-shirt studio</span>
               </div>
 
             </div>
@@ -128,8 +132,8 @@ function Home() {
               <div className="home-fashion-image">
 
                 <img
-                  src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=900&q=85"
-                  alt="StyleAI fashion collection"
+                  src="/products/casual-denim-jacket-black.webp"
+                  alt="Model wearing a black denim jacket"
                 />
 
                 <div className="home-image-overlay"></div>
@@ -149,27 +153,27 @@ function Home() {
                 </strong>
 
                 <small>
-                  AI-powered fashion discovery
+                  Everyday pieces, your way
                 </small>
 
               </div>
 
             </div>
 
-            <div className="home-floating-card review-card">
+            <div className="home-floating-card home-curation-card">
 
               <div className="floating-icon">
-                <FaStar />
+                <FaShoppingBag />
               </div>
 
               <div>
 
                 <strong>
-                  4.8 / 5
+                  Shop your way
                 </strong>
 
                 <span>
-                  Loved by fashion seekers
+                  Filter by colour or occasion
                 </span>
 
               </div>
@@ -189,7 +193,7 @@ function Home() {
                 </strong>
 
                 <span>
-                  Your personal stylist
+                  Product suggestions
                 </span>
 
               </div>
@@ -236,6 +240,14 @@ function Home() {
                 to={`/shop?category=${category.name}`}
                 className={`home-category-card ${category.className}`}
               >
+
+                <img
+                  className="home-category-image"
+                  src={category.image}
+                  alt=""
+                  aria-hidden="true"
+                  loading="lazy"
+                />
 
                 <div className="home-category-top">
 
@@ -308,12 +320,12 @@ function Home() {
               </div>
 
               <h3>
-                AI-Powered Styling
+                Personalised Picks
               </h3>
 
               <p>
-                Get fashion suggestions based
-                on your style, occasion and budget.
+                Find matching products using your colour,
+                occasion and budget choices.
               </p>
 
             </div>
@@ -350,12 +362,12 @@ function Home() {
               </div>
 
               <h3>
-                Curated Collections
+                Fashion in One Place
               </h3>
 
               <p>
-                Explore hand-selected fashion pieces
-                across categories and occasions.
+                Browse clothing, shoes and accessories
+                together in one collection.
               </p>
 
             </div>
@@ -494,10 +506,9 @@ function Home() {
             </h2>
 
             <p>
-              Tell StyleAI where you're going,
-              what you love and how much you want
-              to spend. Your personal AI stylist
-              will help you find the right look.
+              Share an occasion, colour, category or budget.
+              StyleAI filters the catalogue and suggests
+              matching products and outfit combinations.
             </p>
 
             <Link

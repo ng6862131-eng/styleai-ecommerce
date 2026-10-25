@@ -1,0 +1,10 @@
+[
+  {
+    "id": "SELLER-1790861706379-872130",
+    "name": "Nikhil",
+    "email": "ng6862131@gmail.com",
+    "passwordSalt": "25a87d2f8e44f7bf8e41c7834f64f58e",
+    "passwordHash": "4195b28af5aa2fafa35d8df6f8904c0597a8ca42b113ffccb1a68e82de7c0aaf6067457ca6a3bc24e1fecd56e4ea9fd4471330fe576200bc2e406378cf461ea0",
+    "createdAt": "2026-10-01T13:35:06.379Z"
+  }
+]

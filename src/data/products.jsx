@@ -1,3 +1,92 @@
+const COLOR_IMAGES = {
+  oversizedTshirt: {
+    Blue: "/products/oversized-tshirt-blue.jpeg",
+    White: "/products/oversized-tshirt-white.jpeg",
+    Navy: "/products/oversized-tshirt-navy.jpeg",
+  },
+  casualDenimJacket: {
+    Black: "/products/casual-denim-jacket-black.webp",
+    Blue: "/products/casual-denim-jacket-blue.webp",
+  },
+  shirts: {
+    White: "/products/shirt-White.jpg",
+    Black: "/products/shirt-Black.jpg",
+    Grey: "/products/shirt-Grey.jpg",
+    Beige: "/products/shirt-Beige.jpg",
+    Blue: "/products/shirt-Light-Blue.jpg",
+    "Light Blue": "/products/shirt-Light-Blue.jpg",
+    "Dark Blue": "/products/shirt-Navy-Blue.jpg",
+    Navy: "/products/shirt-Navy-Blue.jpg",
+    "Navy Blue": "/products/shirt-Navy-Blue.jpg",
+    Maroon: "/products/shirt-Maroon.jpg",
+    Olive: "/products/shirt-Olive-Green.jpg",
+    "Olive Green": "/products/shirt-Olive-Green.jpg",
+  },
+  tshirts: {
+    White: "/products/tshirt-White.jpg",
+    Black: "/products/tshirt-Black.jpg",
+    Grey: "/products/tshirt-Grey.jpg",
+    Beige: "/products/tshirt-Beige.jpg",
+    Blue: "/products/tshirt-Light-Blue.jpg",
+    "Light Blue": "/products/tshirt-Light-Blue.jpg",
+    "Dark Blue": "/products/tshirt-Navy-Blue.jpg",
+    Navy: "/products/tshirt-Navy-Blue.jpg",
+    "Navy Blue": "/products/tshirt-Navy-Blue.jpg",
+    Maroon: "/products/tshirt-Maroon.jpg",
+    Olive: "/products/tshirt-Olive-Green.jpg",
+    "Olive Green": "/products/tshirt-Olive-Green.jpg",
+  },
+  sneakers: {
+    White: "/products/shoe-sneaker-white.jpg",
+    Black: "/products/shoe-sneaker-black.jpg",
+  },
+  runners: {
+    Black: "/products/shoe-runner-black.jpg",
+    Grey: "/products/shoe-runner-grey.jpg",
+    Blue: "/products/shoe-runner-blue.jpg",
+  },
+  trainers: {
+    White: "/products/shoe-sneaker-white.jpg",
+    Grey: "/products/shoe-runner-grey.jpg",
+  },
+  flats: {
+    Black: "/products/shoe-flat-black.jpg",
+    Beige: "/products/shoe-flat-beige.jpg",
+    Brown: "/products/shoe-flat-brown.jpg",
+  },
+  heels: {
+    Black: "/products/shoe-heel-black.jpg",
+    Red: "/products/shoe-heel-red.jpg",
+    Gold: "/products/shoe-heel-gold.jpg",
+  },
+  sandals: {
+    Brown: "/products/shoe-sandal-brown.jpg",
+    Beige: "/products/shoe-sandal-beige.jpg",
+    Black: "/products/shoe-sandal-black.jpg",
+  },
+  formalShoes: {
+    Black: "/products/shoe-formal-black.jpg",
+    Brown: "/products/shoe-formal-brown.jpg",
+  },
+  bracelet: {
+    Gold: "/products/jewelry-bracelet-gold.jpg",
+    Silver: "/products/jewelry-bracelet-silver.jpg",
+  },
+  earrings: {
+    Silver: "/products/jewelry-earrings-silver.jpg",
+    Gold: "/products/jewelry-earrings-gold.jpg",
+  },
+  mensBlazer: {
+    Black: "/products/blazer-men-black.png",
+    Navy: "/products/blazer-men-navy.png",
+  },
+  womensBlazer: {
+    Black: "/products/blazer-women-black.png",
+    Beige: "/products/blazer-women-beige.png",
+    Grey: "/products/blazer-women-grey.png",
+  },
+};
+
 const products = [
   // Initial stock quantities for StyleAI products.
   // ================= MEN =================
@@ -13,6 +102,7 @@ const products = [
     colors: ["Black", "White", "Grey"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["College", "Casual"],
+    colorImages: COLOR_IMAGES.tshirts,
     image:
       "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
   },
@@ -25,11 +115,11 @@ const products = [
     price: 799,
     rating: 4.7,
     stock: 14,
-    colors: ["Black", "White", "Beige"],
+    colors: ["Blue", "White", "Navy"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["College", "Casual", "Party"],
-    image:
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1",
+    colorImages: COLOR_IMAGES.oversizedTshirt,
+    image: "/products/oversized-tshirt-blue.jpeg",
   },
 
   {
@@ -40,7 +130,7 @@ const products = [
     price: 1299,
     rating: 4.6,
     stock: 10,
-    colors: ["Blue", "Dark Blue"],
+    colors: [],
     sizes: ["28", "30", "32", "34", "36"],
     occasions: ["College", "Casual"],
     image:
@@ -58,8 +148,8 @@ const products = [
     colors: ["Blue", "Black"],
     sizes: ["M", "L", "XL"],
     occasions: ["Casual", "Party"],
-    image:
-      "https://images.unsplash.com/photo-1551028719-00167b16eac5",
+    colorImages: COLOR_IMAGES.casualDenimJacket,
+    image: "/products/casual-denim-jacket-blue.webp",
   },
 
   {
@@ -73,6 +163,7 @@ const products = [
     colors: ["White", "Blue"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["College", "Formal", "Casual"],
+    colorImages: COLOR_IMAGES.shirts,
     image:
       "https://images.unsplash.com/photo-1603252110481-7ba873bf42ab",
   },
@@ -88,8 +179,12 @@ const products = [
     colors: ["White", "Black", "Blue"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["Formal", "Office"],
-    image:
-      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c",
+    colorImages: {
+      White: "/products/classic-formal-shirt-white.jpeg",
+      Black: "/products/classic-formal-shirt-black.webp",
+      Blue: "/products/classic-formal-shirt-navy.webp",
+    },
+    image: "/products/classic-formal-shirt-white.jpeg",
   },
 
   {
@@ -148,8 +243,8 @@ const products = [
     colors: ["Black", "Navy"],
     sizes: ["M", "L", "XL"],
     occasions: ["Party", "Formal"],
-    image:
-      "https://images.unsplash.com/photo-1507679799987-c73779587ccf",
+    colorImages: COLOR_IMAGES.mensBlazer,
+    image: "/products/blazer-men-black.png",
   },
 
   // ================= WOMEN =================
@@ -207,26 +302,11 @@ const products = [
     price: 1399,
     rating: 4.6,
     stock: 13,
-    colors: ["Blue", "Black"],
+    colors: [],
     sizes: ["26", "28", "30", "32"],
     occasions: ["College", "Casual"],
     image:
       "https://images.unsplash.com/photo-1541099649105-f69ad21f3246",
-  },
-
-  {
-    id: 19,
-    name: "Women's White Blouse",
-    category: "Women",
-    gender: "Women",
-    price: 899,
-    rating: 4.6,
-    stock: 10,
-    colors: ["White", "Beige"],
-    sizes: ["S", "M", "L", "XL"],
-    occasions: ["Formal", "Office", "College"],
-    image:
-      "https://images.unsplash.com/photo-1564257577054-5e6c7d1e8f42",
   },
 
   {
@@ -237,7 +317,7 @@ const products = [
     price: 1299,
     rating: 4.7,
     stock: 15,
-    colors: ["Blue", "Black"],
+    colors: [],
     sizes: ["26", "28", "30", "32"],
     occasions: ["College", "Casual"],
     image:
@@ -316,6 +396,7 @@ const products = [
     colors: ["White", "Black"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["College", "Casual", "Vacation"],
+    colorImages: COLOR_IMAGES.sneakers,
     image:
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
   },
@@ -330,6 +411,7 @@ const products = [
     colors: ["Black", "Grey", "Blue"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["Sports", "Casual", "College"],
+    colorImages: COLOR_IMAGES.runners,
     image:
       "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
   },
@@ -344,6 +426,7 @@ const products = [
     colors: ["Black", "White"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["College", "Casual"],
+    colorImages: COLOR_IMAGES.sneakers,
     image:
       "https://images.unsplash.com/photo-1495555961986-6d4c1ecb7be3",
   },
@@ -358,6 +441,7 @@ const products = [
     colors: ["White", "Grey"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["College", "Casual", "Vacation"],
+    colorImages: COLOR_IMAGES.trainers,
     image:
       "https://images.unsplash.com/photo-1460353581641-37baddab0fa2",
   },
@@ -372,6 +456,7 @@ const products = [
     colors: ["Black", "Blue", "Grey"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["Sports", "Casual"],
+    colorImages: COLOR_IMAGES.runners,
     image:
       "https://images.unsplash.com/photo-1552346154-21d32810aba3",
   },
@@ -386,6 +471,7 @@ const products = [
     colors: ["Black", "White"],
     sizes: ["7", "8", "9", "10"],
     occasions: ["Party", "Casual", "College"],
+    colorImages: COLOR_IMAGES.sneakers,
     image:
       "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77",
   },
@@ -400,6 +486,7 @@ const products = [
     colors: ["Black", "Beige", "Brown"],
     sizes: ["5", "6", "7", "8"],
     occasions: ["College", "Casual", "Formal"],
+    colorImages: COLOR_IMAGES.flats,
     image:
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2",
   },
@@ -414,6 +501,7 @@ const products = [
     colors: ["Black", "Red", "Gold"],
     sizes: ["5", "6", "7", "8"],
     occasions: ["Party", "Formal"],
+    colorImages: COLOR_IMAGES.heels,
     image:
       "https://images.unsplash.com/photo-1543163521-1bf539c55dd2",
   },
@@ -428,6 +516,7 @@ const products = [
     colors: ["Brown", "Beige", "Black"],
     sizes: ["5", "6", "7", "8"],
     occasions: ["Vacation", "Casual"],
+    colorImages: COLOR_IMAGES.sandals,
     image:
       "https://images.unsplash.com/photo-1603487742131-4160ec999306",
   },
@@ -442,6 +531,7 @@ const products = [
     colors: ["Black", "Brown"],
     sizes: ["6", "7", "8", "9", "10"],
     occasions: ["Formal", "Office", "Party"],
+    colorImages: COLOR_IMAGES.formalShoes,
     image:
       "https://images.unsplash.com/photo-1614252369475-531eba835eb1",
   },
@@ -570,6 +660,7 @@ const products = [
     colors: ["Gold", "Silver"],
     sizes: ["Standard"],
     occasions: ["Party", "Casual"],
+    colorImages: COLOR_IMAGES.bracelet,
     image:
       "https://images.unsplash.com/photo-1611591437281-460bfbe1220a",
   },
@@ -602,6 +693,7 @@ const products = [
     colors: ["Olive", "Black", "Beige"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["Casual", "College"],
+    colorImages: COLOR_IMAGES.shirts,
     image:
       "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3",
   },
@@ -617,6 +709,7 @@ const products = [
     colors: ["Navy", "White"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["Casual", "Office"],
+    colorImages: COLOR_IMAGES.shirts,
     image:
       "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf",
   },
@@ -662,6 +755,7 @@ const products = [
     colors: ["Blue", "Dark Blue"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["Casual", "College"],
+    colorImages: COLOR_IMAGES.shirts,
     image:
       "https://images.unsplash.com/photo-1578932750294-f5075e85f44a",
   },
@@ -669,21 +763,6 @@ const products = [
   // =====================================================
   // MORE WOMEN
   // =====================================================
-
-  {
-    id: 48,
-    name: "Women’s Satin Blouse",
-    category: "Women",
-    gender: "Women",
-    price: 999,
-    rating: 4.7,
-    stock: 9,
-    colors: ["White", "Black", "Pink"],
-    sizes: ["S", "M", "L"],
-    occasions: ["Formal", "Party", "Office"],
-    image:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1",
-  },
 
   {
     id: 49,
@@ -711,6 +790,7 @@ const products = [
     colors: ["White", "Beige", "Blue"],
     sizes: ["S", "M", "L", "XL"],
     occasions: ["Casual", "Vacation", "College"],
+    colorImages: COLOR_IMAGES.shirts,
     image:
       "https://images.unsplash.com/photo-1604322431548-8c3e1d9f1e58",
   },
@@ -756,8 +836,8 @@ const products = [
     colors: ["Black", "Beige", "Grey"],
     sizes: ["S", "M", "L"],
     occasions: ["Formal", "Office", "Party"],
-    image:
-      "https://images.unsplash.com/photo-1591369822096-ffd140ec948f",
+    colorImages: COLOR_IMAGES.womensBlazer,
+    image: "/products/blazer-women-black.png",
   },
 
   // =====================================================
@@ -848,6 +928,7 @@ const products = [
     colors: ["Silver", "Gold"],
     sizes: ["Standard"],
     occasions: ["Party", "Casual", "Formal"],
+    colorImages: COLOR_IMAGES.earrings,
     image:
       "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908",
   },
@@ -867,4 +948,13 @@ const products = [
   },
 ];
 
-export default products;
+// Remove any accidental empty/undefined entries before the products
+// are used by Shop, AI Stylist, ProductCard and ProductDetails.
+const validProducts = products.filter(
+  (product) =>
+    product &&
+    typeof product === "object" &&
+    Number.isFinite(Number(product.price))
+);
+
+export default validProducts;

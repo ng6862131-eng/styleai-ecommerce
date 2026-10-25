@@ -24,12 +24,17 @@ app.use(express.json({ limit: "5mb" }));
 const DATA_DIR = path.join(__dirname, "data");
 const INVOICE_DIR = path.join(__dirname, "invoices");
 const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
+const SELLERS_FILE = path.join(DATA_DIR, "sellers.json");
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(INVOICE_DIR, { recursive: true });
 
 if (!fs.existsSync(ORDERS_FILE)) {
   fs.writeFileSync(ORDERS_FILE, "[]", "utf8");
+}
+
+if (!fs.existsSync(SELLERS_FILE)) {
+  fs.writeFileSync(SELLERS_FILE, "[]", "utf8");
 }
 
 /* =========================================================
@@ -113,6 +118,40 @@ function readOrders() {
   }
 }
 
+function readSellers() {
+  try {
+    const sellers = JSON.parse(fs.readFileSync(SELLERS_FILE, "utf8"));
+    return Array.isArray(sellers) ? sellers : [];
+  } catch (error) {
+    console.error("SELLER DATA READ ERROR:", error);
+    throw error;
+  }
+}
+
+function writeSellers(sellers) {
+  fs.writeFileSync(SELLERS_FILE, JSON.stringify(sellers, null, 2), "utf8");
+}
+
+function hashSellerPassword(password, salt = crypto.randomBytes(16).toString("hex")) {
+  const hash = crypto.scryptSync(password, salt, 64).toString("hex");
+  return { salt, hash };
+}
+
+function publicSeller(seller) {
+  return {
+    id: seller.id,
+    name: seller.name,
+    email: seller.email,
+    createdAt: seller.createdAt,
+  };
+}
+
+function sellerPasswordMatches(seller, password) {
+  const candidate = crypto.scryptSync(password, seller.passwordSalt, 64);
+  const stored = Buffer.from(seller.passwordHash, "hex");
+  return stored.length === candidate.length && crypto.timingSafeEqual(stored, candidate);
+}
+
 function writeOrders(orders) {
   fs.writeFileSync(
     ORDERS_FILE,
@@ -128,6 +167,88 @@ function cleanString(value, maxLength = 500) {
 
   return String(value).trim().slice(0, maxLength);
 }
+
+/* =========================================================
+   SELLER ACCOUNT API
+========================================================= */
+
+app.post("/seller/register", (req, res) => {
+  try {
+    const name = cleanString(req.body?.name, 100);
+    const email = cleanString(req.body?.email, 150).toLowerCase();
+    const password = String(req.body?.password || "");
+
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter your name, a valid email, and a password.",
+      });
+    }
+
+    const sellers = readSellers();
+    if (sellers.some((seller) => seller.email === email)) {
+      return res.status(409).json({
+        success: false,
+        message: "This seller email is already registered. Please login.",
+      });
+    }
+
+    const { salt, hash } = hashSellerPassword(password);
+    const seller = {
+      id: `SELLER-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+      name,
+      email,
+      passwordSalt: salt,
+      passwordHash: hash,
+      createdAt: new Date().toISOString(),
+    };
+
+    sellers.push(seller);
+    writeSellers(sellers);
+
+    return res.status(201).json({
+      success: true,
+      message: "Seller account created successfully.",
+      seller: publicSeller(seller),
+    });
+  } catch (error) {
+    console.error("SELLER REGISTER ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to create seller account.",
+    });
+  }
+});
+
+app.post("/seller/login", (req, res) => {
+  try {
+    const email = cleanString(req.body?.email, 150).toLowerCase();
+    const password = String(req.body?.password || "");
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Enter your email and password.",
+      });
+    }
+
+    const seller = readSellers().find((item) => item.email === email);
+    if (!seller || !sellerPasswordMatches(seller, password)) {
+      return res.status(401).json({
+        success: false,
+        message: "Seller email or password is incorrect.",
+      });
+    }
+
+    return res.json({ success: true, seller: publicSeller(seller) });
+  } catch (error) {
+    console.error("SELLER LOGIN ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to login to seller account.",
+    });
+  }
+});
 
 function sanitizeCustomer(customer = {}) {
   return {

@@ -1,31 +1,33 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Routes,
   Route,
 } from "react-router-dom";
 
-import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import ProductDetails from "./pages/ProductDetails";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Profile from "./pages/Profile";
-import Order from "./pages/Order";
-import Wishlist from "./pages/Wishlist";
-import Customize3D from "./pages/Customize3D";
-import AiChatbot from "./components/AiChatbot";
-import About from "./pages/About";
-import SellerLogin from "./pages/SellerLogin";
-import SellerDashboard from "./pages/SellerDashboard";
-import SellerOrderDetails from "./pages/SellerOrderDetails";
-import SellerOrders from "./pages/SellerOrders";
+const Home = lazy(() => import("./pages/Home"));
+const Shop = lazy(() => import("./pages/Shop"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const ProductDetails = lazy(() => import("./pages/ProductDetails"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Order = lazy(() => import("./pages/Order"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const Customize3D = lazy(() => import("./pages/Customize3D"));
+const AiChatbot = lazy(() => import("./components/AiChatbot"));
+const About = lazy(() => import("./pages/About"));
+const SellerLogin = lazy(() => import("./pages/SellerLogin"));
+const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
+const SellerOrderDetails = lazy(() => import("./pages/SellerOrderDetails"));
+const SellerOrders = lazy(() => import("./pages/SellerOrders"));
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<div role="status">Loading page…</div>}>
+        <Routes>
 
         {/* ================= HOME ================= */}
         <Route
@@ -125,7 +127,8 @@ function App() {
             element={<SellerOrders />}
           />
 
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

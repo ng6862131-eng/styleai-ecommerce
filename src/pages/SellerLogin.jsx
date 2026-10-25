@@ -9,6 +9,8 @@ import {
   FaUserPlus,
 } from "react-icons/fa";
 
+const SELLER_API = "http://localhost:5000/seller";
+
 function SellerLogin() {
   const navigate = useNavigate();
 
@@ -21,89 +23,102 @@ function SellerLogin() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     setError("");
     setSuccess("");
 
-    const sellers = JSON.parse(
-      localStorage.getItem("styleai-sellers") || "[]"
-    );
+    try {
+      const response = await fetch(`${SELLER_API}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
 
-    const seller = sellers.find(
-      (item) =>
-        item.email.toLowerCase() ===
-          email.trim().toLowerCase() &&
-        item.password === password
-    );
+      if (!response.ok) {
+        // Move an account created by the old browser-only version to the server.
+        if (response.status === 401) {
+          const localSellers = JSON.parse(
+            localStorage.getItem("styleai-sellers") || "[]"
+          );
+          const legacySeller = localSellers.find(
+            (item) =>
+              item.email?.toLowerCase() === email.trim().toLowerCase() &&
+              item.password === password
+          );
 
-    if (!seller) {
-      setError("Seller ID or password is incorrect.");
-      return;
+          if (legacySeller) {
+            const migrationResponse = await fetch(`${SELLER_API}/register`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: legacySeller.name,
+                email: legacySeller.email,
+                password,
+              }),
+            });
+            const migrationData = await migrationResponse.json();
+            if (migrationResponse.ok) {
+              localStorage.setItem("styleai-seller", "true");
+              localStorage.setItem(
+                "styleai-current-seller",
+                JSON.stringify(migrationData.seller)
+              );
+              navigate("/seller/dashboard");
+              return;
+            }
+          }
+        }
+
+        setError(data.message || "Seller email or password is incorrect.");
+        return;
+      }
+
+      localStorage.setItem("styleai-seller", "true");
+      localStorage.setItem(
+        "styleai-current-seller",
+        JSON.stringify(data.seller)
+      );
+      navigate("/seller/dashboard");
+    } catch (err) {
+      console.error("Seller login error:", err);
+      setError("Unable to connect to the StyleAI backend.");
     }
-
-    localStorage.setItem("styleai-seller", "true");
-    localStorage.setItem(
-      "styleai-current-seller",
-      JSON.stringify(seller)
-    );
-
-    navigate("/seller/dashboard");
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     setError("");
     setSuccess("");
 
-    const sellers = JSON.parse(
-      localStorage.getItem("styleai-sellers") || "[]"
-    );
+    try {
+      const response = await fetch(`${SELLER_API}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await response.json();
 
-    const emailExists = sellers.some(
-      (item) =>
-        item.email.toLowerCase() ===
-        email.trim().toLowerCase()
-    );
+      if (!response.ok) {
+        setError(data.message || "Unable to create seller account.");
+        return;
+      }
 
-    if (emailExists) {
-      setError(
-        "This seller email is already registered. Please login."
+      localStorage.setItem("styleai-seller", "true");
+      localStorage.setItem(
+        "styleai-current-seller",
+        JSON.stringify(data.seller)
       );
-      return;
+      setSuccess(data.message || "Seller account created successfully.");
+
+      setTimeout(() => navigate("/seller/dashboard"), 700);
+    } catch (err) {
+      console.error("Seller registration error:", err);
+      setError("Unable to connect to the StyleAI backend.");
     }
-
-    const newSeller = {
-      id: `SELLER-${Date.now()}`,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      password,
-      createdAt: new Date().toISOString(),
-    };
-
-    sellers.push(newSeller);
-
-    localStorage.setItem(
-      "styleai-sellers",
-      JSON.stringify(sellers)
-    );
-
-    localStorage.setItem("styleai-seller", "true");
-
-    localStorage.setItem(
-      "styleai-current-seller",
-      JSON.stringify(newSeller)
-    );
-
-    setSuccess(
-      "Seller account created successfully."
-    );
-
-    setTimeout(() => {
-      navigate("/seller/dashboard");
-    }, 700);
   };
 
   const switchMode = () => {

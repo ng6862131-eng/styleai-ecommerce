@@ -144,8 +144,9 @@ function Order() {
                             </h3>
 
                             <p>
-                              {item.selectedColor}
-                              {" / "}
+                              {item.selectedColor
+                                ? `${item.selectedColor} / `
+                                : ""}
                               {item.selectedSize}
                             </p>
 

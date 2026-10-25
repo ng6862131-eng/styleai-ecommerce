@@ -156,11 +156,12 @@ function Cart() {
 
                   <div className="cart-basic-details">
 
-                    <span>
-                      Colour:{" "}
-                      {item.selectedColor ||
-                        "Default"}
-                    </span>
+                    {item.selectedColor &&
+                      item.selectedColor !== "Default" && (
+                        <span>
+                          Colour: {item.selectedColor}
+                        </span>
+                      )}
 
                     <span>
                       Size:{" "}
