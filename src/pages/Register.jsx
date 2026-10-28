@@ -73,7 +73,7 @@ function Register() {
 
   /* ================= REGISTER ================= */
 
-  const handleRegister = (event) => {
+  const handleRegister = async (event) => {
     event.preventDefault();
 
     setError("");
@@ -100,9 +100,31 @@ function Register() {
       return;
     }
 
-    const savedUser = localStorage.getItem(
-      "styleai-user"
-    );
+    try {
+      const response = await fetch("http://localhost:5000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), password }),
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        localStorage.setItem("styleai-user", JSON.stringify(result.user));
+        localStorage.removeItem("styleai-user-token");
+        localStorage.removeItem("styleai-logged-in");
+        navigate("/login");
+        return;
+      }
+
+      if (response.status !== 503) {
+        setError(result.message || "Unable to create the account.");
+        return;
+      }
+    } catch {
+      // Keep the existing browser-only registration available if the API is offline.
+    }
+
+    const savedUser = localStorage.getItem("styleai-user");
 
     if (savedUser) {
       const existingUser = JSON.parse(savedUser);
@@ -138,6 +160,7 @@ function Register() {
     localStorage.removeItem(
       "styleai-logged-in"
     );
+    localStorage.removeItem("styleai-user-token");
 
     navigate("/login");
   };

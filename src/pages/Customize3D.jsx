@@ -36,7 +36,7 @@ import {
 
 import * as THREE from "three";
 
-import products from "../data/products";
+import products from "../data/products.js";
 import { useCart } from "../context/CartContext";
 
 

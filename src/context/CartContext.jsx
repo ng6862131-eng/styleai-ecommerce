@@ -1,6 +1,9 @@
 import {
+  useCallback,
   createContext,
   useContext,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -31,6 +34,10 @@ export function CartProvider({ children }) {
       return [];
     }
   });
+  const [authToken, setAuthToken] = useState(() =>
+    localStorage.getItem("styleai-user-token")
+  );
+  const cartHydrating = useRef(Boolean(authToken));
 
 
   /* =======================================================
@@ -52,7 +59,7 @@ export function CartProvider({ children }) {
      CREATE ITEM KEY
   ======================================================= */
 
-  const getItemKey = (
+  const getItemKey = useCallback((
     product,
     selectedColor,
     selectedSize
@@ -85,7 +92,99 @@ export function CartProvider({ children }) {
       selectedSize,
       customizationKey,
     ].join("|");
-  };
+  }, []);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      cartHydrating.current = true;
+      setAuthToken(localStorage.getItem("styleai-user-token"));
+    };
+    window.addEventListener("styleai-auth-changed", handleAuthChange);
+    return () => window.removeEventListener("styleai-auth-changed", handleAuthChange);
+  }, []);
+
+  useEffect(() => {
+    if (!authToken) {
+      cartHydrating.current = false;
+      return undefined;
+    }
+
+    let cancelled = false;
+    cartHydrating.current = true;
+
+    const hydrateCart = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth/cart", {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success || cancelled) return;
+
+        let localCart = [];
+        try {
+          localCart = JSON.parse(localStorage.getItem("styleai-cart") || "[]");
+        } catch {
+          localCart = [];
+        }
+
+        const mergedCart = Array.isArray(result.items) ? [...result.items] : [];
+        for (const localItem of Array.isArray(localCart) ? localCart : []) {
+          const existingIndex = mergedCart.findIndex((item) =>
+            getItemKey(item, item.selectedColor, item.selectedSize) ===
+            getItemKey(localItem, localItem.selectedColor, localItem.selectedSize)
+          );
+          if (existingIndex >= 0) {
+            mergedCart[existingIndex] = {
+              ...mergedCart[existingIndex],
+              quantity: Number(mergedCart[existingIndex].quantity || 0) + Number(localItem.quantity || 0),
+            };
+          } else {
+            mergedCart.push(localItem);
+          }
+        }
+
+        if (cancelled) return;
+        setCartItems(mergedCart);
+        localStorage.setItem("styleai-cart", JSON.stringify(mergedCart));
+        await fetch("http://localhost:5000/auth/cart", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ items: mergedCart }),
+        });
+      } catch (error) {
+        console.error("Unable to sync the cart with StyleAI:", error);
+      } finally {
+        if (!cancelled) cartHydrating.current = false;
+      }
+    };
+
+    hydrateCart();
+    return () => {
+      cancelled = true;
+    };
+  }, [authToken, getItemKey]);
+
+  useEffect(() => {
+    if (!authToken || cartHydrating.current) return undefined;
+    const timeout = window.setTimeout(async () => {
+      try {
+        await fetch("http://localhost:5000/auth/cart", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ items: cartItems }),
+        });
+      } catch (error) {
+        console.error("Unable to save the cart to StyleAI:", error);
+      }
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [cartItems, authToken]);
 
 
   /* =======================================================

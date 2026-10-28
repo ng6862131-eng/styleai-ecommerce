@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 
 import ProductCard from "../components/ProductCard";
-import products from "../data/products";
+import products from "../data/products.js";
 
 function Shop() {
   const [category, setCategory] = useState("All");

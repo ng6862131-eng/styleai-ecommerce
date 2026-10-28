@@ -22,7 +22,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
 
     setError("");
@@ -32,33 +32,93 @@ function Login() {
       return;
     }
 
-    const savedUser = JSON.parse(
-      localStorage.getItem("styleai-user")
-    );
+    let databaseUnavailable = false;
+    let apiError = "Email or password is incorrect.";
 
-    if (!savedUser) {
-      setError(
-        "No account found. Please create an account first."
-      );
-      return;
+    try {
+      const response = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        localStorage.setItem("styleai-user", JSON.stringify(result.user));
+        localStorage.setItem("styleai-user-token", result.token);
+        localStorage.setItem("styleai-logged-in", "true");
+        window.dispatchEvent(new Event("styleai-auth-changed"));
+        navigate(location.state?.from || "/");
+        return;
+      }
+
+      apiError = result.message || apiError;
+      if (response.status === 401) {
+        const savedUser = JSON.parse(localStorage.getItem("styleai-user") || "null");
+        const isLegacyAccount = savedUser?.password &&
+          savedUser.email?.toLowerCase() === email.trim().toLowerCase() &&
+          savedUser.password === password;
+
+        if (isLegacyAccount) {
+          const migrationResponse = await fetch("http://localhost:5000/auth/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: savedUser.name, email: savedUser.email, password }),
+          });
+          const migrationResult = await migrationResponse.json();
+
+          if (migrationResponse.ok || migrationResponse.status === 409) {
+            const retryResponse = await fetch("http://localhost:5000/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: savedUser.email, password }),
+            });
+            const retryResult = await retryResponse.json();
+            if (retryResponse.ok && retryResult.success) {
+              localStorage.setItem("styleai-user", JSON.stringify(retryResult.user));
+              localStorage.setItem("styleai-user-token", retryResult.token);
+              localStorage.setItem("styleai-logged-in", "true");
+              window.dispatchEvent(new Event("styleai-auth-changed"));
+              navigate(location.state?.from || "/");
+              return;
+            }
+            apiError = retryResult.message || apiError;
+          } else {
+            apiError = migrationResult.message || apiError;
+          }
+        }
+
+        setError(apiError);
+        return;
+      }
+
+      if (response.status === 503) {
+        databaseUnavailable = true;
+      } else {
+        setError(apiError);
+        return;
+      }
+    } catch {
+      databaseUnavailable = true;
     }
 
-    if (
-      savedUser.email !== email ||
-      savedUser.password !== password
-    ) {
-      setError("Incorrect email or password.");
-      return;
+    if (databaseUnavailable) {
+      let savedUser = null;
+      try {
+        savedUser = JSON.parse(localStorage.getItem("styleai-user") || "null");
+      } catch {
+        savedUser = null;
+      }
+
+      if (savedUser?.email?.toLowerCase() === email.trim().toLowerCase() && savedUser.password === password) {
+        localStorage.setItem("styleai-logged-in", "true");
+        window.dispatchEvent(new Event("styleai-auth-changed"));
+        navigate(location.state?.from || "/");
+        return;
+      }
+
+      setError(savedUser ? "Incorrect email or password." : "Unable to connect to the StyleAI backend. Please try again.");
     }
-
-    localStorage.setItem(
-      "styleai-logged-in",
-      "true"
-    );
-
-    navigate(
-  location.state?.from || "/"
-);
   };
 
   return (

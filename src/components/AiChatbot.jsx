@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import products from "../data/products";
+import products from "../data/products.js";
 import { useCart } from "../context/CartContext.jsx";
 import { FaArrowLeft } from "react-icons/fa";
 

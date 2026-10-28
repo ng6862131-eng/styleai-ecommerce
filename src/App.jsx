@@ -23,6 +23,7 @@ const SellerLogin = lazy(() => import("./pages/SellerLogin"));
 const SellerDashboard = lazy(() => import("./pages/SellerDashboard"));
 const SellerOrderDetails = lazy(() => import("./pages/SellerOrderDetails"));
 const SellerOrders = lazy(() => import("./pages/SellerOrders"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 function App() {
   return (
@@ -129,6 +130,12 @@ function App() {
             path="/seller/orders"
             element={<SellerOrders />}
           />
+
+        {/* ================= STORE ADMIN ================= */}
+        <Route
+          path="/admin"
+          element={<AdminDashboard />}
+        />
 
         </Routes>
       </Suspense>

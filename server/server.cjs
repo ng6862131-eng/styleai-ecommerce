@@ -12,6 +12,8 @@ dotenv.config({
   path: path.resolve(__dirname, "../.env"),
 });
 
+const db = require("./db.cjs");
+
 const app = express();
 
 app.use(cors());
@@ -79,6 +81,8 @@ if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
 ========================================================= */
 
 const pendingOrders = new Map();
+const customerSessions = new Map();
+const adminSessions = new Map();
 
 /* =========================================================
    COUPONS
@@ -168,11 +172,271 @@ function cleanString(value, maxLength = 500) {
   return String(value).trim().slice(0, maxLength);
 }
 
+function safeEqual(leftValue, rightValue) {
+  const left = Buffer.from(String(leftValue || ""));
+  const right = Buffer.from(String(rightValue || ""));
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function publicUser(user) {
+  return {
+    id: user.public_id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.created_at,
+  };
+}
+
+function createSession(sessions, details) {
+  const token = crypto.randomBytes(32).toString("hex");
+  sessions.set(token, {
+    ...details,
+    expiresAt: Date.now() + 8 * 60 * 60 * 1000,
+  });
+  return token;
+}
+
+function readSession(req, sessions) {
+  const token = cleanString(req.headers.authorization, 200).replace(/^Bearer\s+/i, "");
+  const session = sessions.get(token);
+  if (!session) return null;
+  if (session.expiresAt <= Date.now()) {
+    sessions.delete(token);
+    return null;
+  }
+  return session;
+}
+
+function requireDatabase(res) {
+  if (db.isDatabaseReady()) return true;
+  res.status(503).json({
+    success: false,
+    message: "The StyleAI database is not connected. Check the DB settings in .env and restart the backend.",
+  });
+  return false;
+}
+
+function sanitizeCartItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items.slice(0, 100).map((item) => {
+    const customization = item?.customization && typeof item.customization === "object"
+      ? {
+          productType: cleanString(item.customization.productType, 80),
+          pattern: cleanString(item.customization.pattern, 80),
+          text: cleanString(item.customization.text, 150),
+          textColor: cleanString(item.customization.textColor, 40),
+        }
+      : null;
+    return {
+      id: Number(item?.id) || null,
+      name: cleanString(item?.name, 200) || "Product",
+      image: cleanString(item?.image, 1000),
+      price: Math.max(0, Number(item?.price) || 0),
+      selectedColor: cleanString(item?.selectedColor, 80) || "Default",
+      selectedSize: cleanString(item?.selectedSize, 40) || "Standard",
+      quantity: Math.min(100, Math.max(1, Number(item?.quantity) || 1)),
+      customization,
+    };
+  });
+}
+
+/* =========================================================
+   CUSTOMER ACCOUNTS, CARTS, AND ADMIN DATA
+========================================================= */
+
+app.post("/auth/register", async (req, res) => {
+  try {
+    if (!requireDatabase(res)) return;
+    const name = cleanString(req.body?.name, 100);
+    const email = cleanString(req.body?.email, 150).toLowerCase();
+    const password = String(req.body?.password || "");
+
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8) {
+      return res.status(400).json({ success: false, message: "Enter a valid name and email, and use a password with at least 8 characters." });
+    }
+
+    const { salt, hash } = hashSellerPassword(password);
+    const result = await db.createCustomerAccount({
+      name,
+      email,
+      passwordSalt: salt,
+      passwordHash: hash,
+      publicId: `USER-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+    });
+
+    if (!result.created) {
+      return res.status(409).json({ success: false, message: "An account with this email already exists. Please log in." });
+    }
+
+    return res.status(201).json({ success: true, message: "Account created successfully.", user: publicUser(result.user) });
+  } catch (error) {
+    console.error("CUSTOMER REGISTER ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to create the account." });
+  }
+});
+
+app.post("/auth/login", async (req, res) => {
+  try {
+    if (!requireDatabase(res)) return;
+    const email = cleanString(req.body?.email, 150).toLowerCase();
+    const password = String(req.body?.password || "");
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Enter your email and password." });
+    }
+
+    const user = await db.findUserByEmail(email);
+    if (!user?.password_hash || !sellerPasswordMatches({
+      passwordSalt: user.password_salt,
+      passwordHash: user.password_hash,
+    }, password)) {
+      return res.status(401).json({ success: false, message: "Email or password is incorrect." });
+    }
+
+    const token = createSession(customerSessions, {
+      userId: user.id,
+      userPublicId: user.public_id,
+      email: user.email,
+    });
+    return res.json({ success: true, token, user: publicUser(user) });
+  } catch (error) {
+    console.error("CUSTOMER LOGIN ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to log in." });
+  }
+});
+
+app.get("/auth/cart", async (req, res) => {
+  try {
+    if (!requireDatabase(res)) return;
+    const session = readSession(req, customerSessions);
+    if (!session) return res.status(401).json({ success: false, message: "Please log in again." });
+    const items = await db.getUserCart(session.userId);
+    return res.json({ success: true, items });
+  } catch (error) {
+    console.error("CUSTOMER CART READ ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to load the saved cart." });
+  }
+});
+
+app.put("/auth/cart", async (req, res) => {
+  try {
+    if (!requireDatabase(res)) return;
+    const session = readSession(req, customerSessions);
+    if (!session) return res.status(401).json({ success: false, message: "Please log in again." });
+    const items = sanitizeCartItems(req.body?.items);
+    await db.saveUserCart(session.userId, items);
+    return res.json({ success: true, count: items.length });
+  } catch (error) {
+    console.error("CUSTOMER CART SAVE ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to save the cart." });
+  }
+});
+
+app.post("/admin/login", (req, res) => {
+  const email = cleanString(req.body?.email, 150).toLowerCase();
+  const password = String(req.body?.password || "");
+  const configuredEmail = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  const configuredPassword = String(process.env.ADMIN_PASSWORD || "");
+
+  if (!configuredEmail || !configuredPassword) {
+    return res.status(503).json({ success: false, message: "Add ADMIN_EMAIL and ADMIN_PASSWORD to the project .env file first." });
+  }
+  if (!safeEqual(email, configuredEmail) || !safeEqual(password, configuredPassword)) {
+    return res.status(401).json({ success: false, message: "Admin email or password is incorrect." });
+  }
+
+  const token = createSession(adminSessions, { email: configuredEmail });
+  return res.json({ success: true, token });
+});
+
+app.get("/admin/data", async (req, res) => {
+  try {
+    if (!requireDatabase(res)) return;
+    const session = readSession(req, adminSessions);
+    if (!session) return res.status(401).json({ success: false, message: "Admin session expired. Please log in again." });
+
+    const [users] = await db.pool.query(
+      `SELECT public_id AS id, name, email, created_at AS createdAt
+       FROM users ORDER BY created_at DESC LIMIT 500`
+    );
+    const [productRows] = await db.pool.query(
+      `SELECT product_id AS id, name, category, gender, price, stock, product_data AS productData
+       FROM products ORDER BY product_id`
+    );
+    const [cartRows] = await db.pool.query(
+      `SELECT c.id AS cartId, c.updated_at AS updatedAt, u.public_id AS userId,
+        u.name AS userName, u.email, ci.item_data AS itemData, ci.quantity
+       FROM carts c JOIN users u ON u.id = c.user_id
+       LEFT JOIN cart_items ci ON ci.cart_id = c.id
+       ORDER BY c.updated_at DESC LIMIT 1000`
+    );
+    const [orderRows] = await db.pool.query(
+      `SELECT order_data AS orderData FROM orders ORDER BY created_at DESC LIMIT 500`
+    );
+    const [sellers] = await db.pool.query(
+      `SELECT seller_id AS id, name, email, created_at AS createdAt
+       FROM sellers ORDER BY created_at DESC LIMIT 500`
+    );
+
+    const cartsById = new Map();
+    for (const row of cartRows) {
+      if (!cartsById.has(row.cartId)) {
+        cartsById.set(row.cartId, {
+          id: row.cartId,
+          updatedAt: row.updatedAt,
+          user: { id: row.userId, name: row.userName, email: row.email },
+          items: [],
+        });
+      }
+      if (row.itemData) {
+        cartsById.get(row.cartId).items.push({
+          ...db.parseJson(row.itemData),
+          quantity: Number(row.quantity) || 1,
+        });
+      }
+    }
+
+    const products = productRows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      gender: row.gender,
+      price: Number(row.price) || 0,
+      stock: Number(row.stock) || 0,
+    }));
+    const orders = orderRows.map((row) => db.parseJson(row.orderData)).filter(Boolean);
+
+    return res.json({
+      success: true,
+      summary: {
+        users: users.length,
+        products: products.length,
+        carts: cartsById.size,
+        orders: orders.length,
+        sellers: sellers.length,
+      },
+      users,
+      products,
+      carts: [...cartsById.values()],
+      orders,
+      sellers,
+    });
+  } catch (error) {
+    console.error("ADMIN DATA ERROR:", error);
+    return res.status(500).json({ success: false, message: "Unable to load the store data." });
+  }
+});
+
+app.post("/admin/logout", (req, res) => {
+  const token = cleanString(req.headers.authorization, 200).replace(/^Bearer\s+/i, "");
+  if (token) adminSessions.delete(token);
+  return res.json({ success: true });
+});
+
 /* =========================================================
    SELLER ACCOUNT API
 ========================================================= */
 
-app.post("/seller/register", (req, res) => {
+app.post("/seller/register", async (req, res) => {
   try {
     const name = cleanString(req.body?.name, 100);
     const email = cleanString(req.body?.email, 150).toLowerCase();
@@ -205,6 +469,13 @@ app.post("/seller/register", (req, res) => {
 
     sellers.push(seller);
     writeSellers(sellers);
+    if (db.isDatabaseReady()) {
+      try {
+        await db.saveSeller(seller);
+      } catch (databaseError) {
+        console.error("SELLER DATABASE SYNC ERROR:", databaseError);
+      }
+    }
 
     return res.status(201).json({
       success: true,
@@ -1033,6 +1304,13 @@ app.post("/verify-payment", async (req, res) => {
     /* Save first so a paid order is never lost */
     orders.push(order);
     writeOrders(orders);
+    if (db.isDatabaseReady()) {
+      try {
+        await db.saveOrder(order);
+      } catch (databaseError) {
+        console.error("ORDER DATABASE SYNC ERROR:", databaseError);
+      }
+    }
 
     /* Invoice */
     const invoicePath = path.join(
@@ -1076,6 +1354,13 @@ app.post("/verify-payment", async (req, res) => {
         if (orderIndex !== -1) {
           latestOrders[orderIndex] = order;
           writeOrders(latestOrders);
+          if (db.isDatabaseReady()) {
+            try {
+              await db.saveOrder(order);
+            } catch (databaseError) {
+              console.error("ORDER DATABASE SYNC ERROR:", databaseError);
+            }
+          }
         }
       } catch (emailError) {
         console.error(
@@ -1094,6 +1379,13 @@ app.post("/verify-payment", async (req, res) => {
         if (orderIndex !== -1) {
           latestOrders[orderIndex] = order;
           writeOrders(latestOrders);
+          if (db.isDatabaseReady()) {
+            try {
+              await db.saveOrder(order);
+            } catch (databaseError) {
+              console.error("ORDER DATABASE SYNC ERROR:", databaseError);
+            }
+          }
         }
       }
     } else {
@@ -1382,17 +1674,21 @@ app.get("/seller/dashboard", (req, res) => {
 
 const PORT = 5000;
 
-app.listen(PORT, () => {
-  console.log(
-    `StyleAI backend running on http://localhost:${PORT}`
-  );
-  console.log(
-    `Orders file: ${ORDERS_FILE}`
-  );
-  console.log(
-    `Invoice folder: ${INVOICE_DIR}`
-  );
-  console.log(
-    `Email configured: ${Boolean(mailer)}`
-  );
-});
+async function startServer() {
+  try {
+    await db.initializeDatabase();
+    console.log(`MySQL database ready: ${process.env.DB_NAME || "styleai"}`);
+  } catch (error) {
+    console.error("MySQL is not ready. Add DB settings to .env; the existing file-backed features will remain available.");
+    console.error(error.message);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`StyleAI backend running on http://localhost:${PORT}`);
+    console.log(`Orders file: ${ORDERS_FILE}`);
+    console.log(`Invoice folder: ${INVOICE_DIR}`);
+    console.log(`Email configured: ${Boolean(mailer)}`);
+  });
+}
+
+startServer();

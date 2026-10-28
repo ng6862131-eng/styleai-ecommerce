@@ -136,5 +136,46 @@
       }
     ],
     "emailSent": true
+  },
+  {
+    "id": "STYLEAI-1793194649453",
+    "razorpayOrderId": "order_TtLYss977egVyV",
+    "date": "28 Oct 2026",
+    "paymentId": "pay_TtLaH8eipXEgJ2",
+    "paymentStatus": "Paid",
+    "subtotal": 2596,
+    "discount": 0,
+    "couponCode": null,
+    "couponLabel": null,
+    "total": 2596,
+    "customer": {
+      "name": "Abhiraj Jaiswar",
+      "email": "abhirajjaiswar123@gmail.com",
+      "phone": "9987441031",
+      "address": "pantnagar ghatkopar east"
+    },
+    "items": [
+      {
+        "id": 1,
+        "name": "Classic Black T-Shirt",
+        "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+        "price": 599,
+        "quantity": 3,
+        "selectedColor": "Black",
+        "selectedSize": "S",
+        "customization": null
+      },
+      {
+        "id": 2,
+        "name": "Oversized Streetwear T-Shirt",
+        "image": "/products/oversized-tshirt-blue.jpeg",
+        "price": 799,
+        "quantity": 1,
+        "selectedColor": "Blue",
+        "selectedSize": "S",
+        "customization": null
+      }
+    ],
+    "emailSent": true
   }
 ]

@@ -43,6 +43,8 @@ function Profile() {
     localStorage.removeItem(
       "styleai-logged-in"
     );
+    localStorage.removeItem("styleai-user-token");
+    window.dispatchEvent(new Event("styleai-auth-changed"));
 
     navigate("/login");
   };
